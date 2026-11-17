@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Қонақүй — Android қосымшасы</title>
+<style>
+/* ============================================================
+   Дизайн-жүйе: түс, типографика, қозғалыс
+   ============================================================ */
+:root{
+  --ink:#f4f6f8;
+  --ink-dim:#9aa6b2;
+  --bg:#070b12;
+  --line:rgba(255,255,255,.10);
+  --line-2:rgba(255,255,255,.18);
+  --brand:#19c6a6;
+  --brand-2:#4a9dff;
+  --warm:#ffb454;
+  --rose:#ff6b8a;
+  --glass:rgba(255,255,255,.045);
+  --r:22px;
+  --maxw:1180px;
+  --ease:cubic-bezier(.22,.8,.26,1);
+  --f-display:"Space Grotesk","Segoe UI Semibold","Trebuchet MS",system-ui,sans-serif;
+  --f-text:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono","Cascadia Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-snap-type:y proximity}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--f-text);line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+
+/* ---------- Градиентті тор ---------- */
+.mesh{position:fixed;inset:-20vmax;z-index:0;pointer-events:none;filter:blur(10px);opacity:.75}
+.mesh i{position:absolute;display:block;border-radius:50%;mix-blend-mode:screen;
+  animation:drift 26s var(--ease) infinite alternate}
+.mesh i:nth-child(1){width:58vmax;height:58vmax;left:-6vmax;top:-4vmax;
+  background:radial-gradient(circle at 50% 50%,rgba(25,198,166,.42),transparent 62%)}
+.mesh i:nth-child(2){width:52vmax;height:52vmax;right:-8vmax;top:6vmax;
+  background:radial-gradient(circle at 50% 50%,rgba(74,157,255,.38),transparent 62%);
+  animation-duration:34s;animation-delay:-6s}
+.mesh i:nth-child(3){width:46vmax;height:46vmax;left:18vmax;bottom:-10vmax;
+  background:radial-gradient(circle at 50% 50%,rgba(255,180,84,.26),transparent 64%);
+  animation-duration:40s;animation-delay:-14s}
+.mesh i:nth-child(4){width:40vmax;height:40vmax;right:10vmax;bottom:-6vmax;
+  background:radial-gradient(circle at 50% 50%,rgba(255,107,138,.22),transparent 64%);
+  animation-duration:30s;animation-delay:-20s}
+@keyframes drift{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(4vmax,-3vmax,0) scale(1.14)}
+  100%{transform:translate3d(-5vmax,4vmax,0) scale(.94)}
+}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- Жоғарғы панель ---------- */
+.top{position:fixed;left:0;right:0;top:0;z-index:40;backdrop-filter:blur(14px);
+  background:linear-gradient(to bottom,rgba(7,11,18,.86),rgba(7,11,18,.32));
+  border-bottom:1px solid var(--line)}
+.top-in{max-width:var(--maxw);margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700}
+.logo .dot{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--brand),var(--brand-2));color:#04121a;font-size:15px}
+.top .who{margin-left:auto;color:var(--ink-dim);font-size:13px}
+.bar{position:fixed;top:0;left:0;height:3px;z-index:50;width:0;
+  background:linear-gradient(90deg,var(--brand),var(--brand-2),var(--warm))}
+
+/* ---------- Нүктелі навигация ---------- */
+.dots{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:40;
+  display:flex;flex-direction:column;gap:9px}
+.dots b{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.22);
+  cursor:pointer;transition:.35s var(--ease)}
+.dots b.on{background:var(--brand);height:24px;border-radius:5px}
+
+/* ---------- Слайд ---------- */
+.slide{position:relative;z-index:2;min-height:100vh;scroll-snap-align:start;
+  display:flex;align-items:center;padding:96px 22px 64px}
+.wrap{max-width:var(--maxw);margin:0 auto;width:100%}
+.kicker{display:inline-flex;align-items:center;gap:9px;font-family:var(--f-mono);
+  font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);
+  border:1px solid rgba(25,198,166,.3);background:rgba(25,198,166,.07);
+  padding:6px 12px;border-radius:999px}
+h1{font-family:var(--f-display);font-size:clamp(38px,7.2vw,86px);line-height:1.02;
+  margin:18px 0 14px;font-weight:700;letter-spacing:-.02em}
+h2{font-family:var(--f-display);font-size:clamp(26px,3.9vw,46px);line-height:1.1;
+  margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+h3{font-family:var(--f-display);font-size:18px;margin:0 0 6px;font-weight:600}
+p{margin:0 0 12px;color:#cfd8e3}
+.lead{font-size:clamp(16px,1.5vw,20px);color:#dde5ee;max-width:70ch}
+.dim{color:var(--ink-dim)}
+.sm{font-size:13.5px}
+.xs{font-size:12px}
+.grad{background:linear-gradient(100deg,var(--brand) 6%,var(--brand-2) 48%,var(--warm) 96%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- Карточкалар / bento ---------- */
+.bento{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)}
+.card{grid-column:span 4;background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--r);padding:20px;position:relative;overflow:hidden;
+  transition:.45s var(--ease)}
+.card:before{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;
+  background:radial-gradient(420px 220px at var(--mx,50%) var(--my,0%),rgba(255,255,255,.10),transparent 60%);
+  transition:.4s}
+.card:hover{transform:translateY(-4px);border-color:var(--line-2)}
+.card:hover:before{opacity:1}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}
+.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.num{font-family:var(--f-display);font-size:34px;font-weight:700;letter-spacing:-.02em}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;
+  padding:3px 9px;border-radius:7px;border:1px solid var(--line-2);color:var(--ink-dim)}
+.tag.g{color:var(--brand);border-color:rgba(25,198,166,.35);background:rgba(25,198,166,.08)}
+.tag.b{color:var(--brand-2);border-color:rgba(74,157,255,.35);background:rgba(74,157,255,.08)}
+.tag.w{color:var(--warm);border-color:rgba(255,180,84,.35);background:rgba(255,180,84,.08)}
+.tag.r{color:var(--rose);border-color:rgba(255,107,138,.35);background:rgba(255,107,138,.08)}
+.ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin-bottom:12px;
+  background:linear-gradient(140deg,rgba(25,198,166,.22),rgba(74,157,255,.16));
+  border:1px solid var(--line-2);font-size:19px;font-family:var(--f-display)}
+
+/* ---------- Код ---------- */
+pre{margin:0;overflow:auto;font-family:var(--f-mono);font-size:12.6px;line-height:1.72;
+  background:#060a11;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  color:#c9d4e2;max-height:52vh}
+pre::-webkit-scrollbar{height:8px;width:8px}
+pre::-webkit-scrollbar-thumb{background:#1b2636;border-radius:8px}
+.k{color:#7aa2ff}.s{color:#9ee6a0}.n{color:#ffcc7a}.cm{color:#5d6b7d;font-style:italic}
+.fn{color:#5ee0c6}
+.codehead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--f-mono);
+  font-size:11.5px;color:var(--ink-dim)}
+.dotset{display:flex;gap:5px}
+.dotset span{width:9px;height:9px;border-radius:50%;display:block}
+
+/* ---------- Кесте ---------- */
+table{width:100%;border-collapse:collapse;font-size:13.4px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+th{color:var(--ink-dim);font-weight:600;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+td.ok{color:var(--brand)}
+
+/* ---------- Диаграмма ---------- */
+.bars{display:grid;gap:11px}
+.row{display:grid;grid-template-columns:150px 1fr 96px;align-items:center;gap:12px;font-size:13px}
+.track{height:12px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.fill{height:100%;width:0;border-radius:99px;display:block;transition:width 1.25s var(--ease);
+  background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+.fill.w{background:linear-gradient(90deg,var(--warm),var(--rose))}
+
+/* ---------- Телефон макеті ---------- */
+.phones{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.phone{width:200px;border-radius:26px;padding:9px;background:#0f1724;
+  border:1px solid var(--line-2);box-shadow:0 30px 70px -30px rgba(0,0,0,.9);
+  transition:.5s var(--ease)}
+.phone:hover{transform:translateY(-8px) rotate(-.6deg)}
+.phone img{width:100%;display:block;border-radius:18px;background:#fff}
+.phone .cap{text-align:center;font-size:11.5px;color:var(--ink-dim);padding:8px 2px 2px}
+
+/* ---------- Қадамдар ---------- */
+.steps{display:grid;gap:12px}
+.step{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;
+  padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--glass)}
+.step b{font-family:var(--f-display);font-size:17px;width:34px;height:34px;border-radius:11px;
+  display:grid;place-items:center;background:linear-gradient(140deg,var(--brand),var(--brand-2));color:#04121a}
+
+/* ---------- Кіру анимациясы ---------- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv.in.d1{transition-delay:.08s}.rv.in.d2{transition-delay:.16s}
+.rv.in.d3{transition-delay:.24s}.rv.in.d4{transition-delay:.32s}
+.rv.in.d5{transition-delay:.40s}
+.word{display:inline-block;opacity:0;transform:translateY(.5em) rotate(2deg);
+  animation:word .9s var(--ease) forwards}
+@keyframes word{to{opacity:1;transform:none}}
+
+/* ---------- ER схема ---------- */
+svg .draw{stroke-dasharray:1200;stroke-dashoffset:1200;transition:stroke-dashoffset 1.8s var(--ease)}
+.in svg .draw{stroke-dashoffset:0}
+svg text{font-family:var(--f-mono);font-size:11px;fill:#c6d2e0}
+svg .ttl{font-family:var(--f-display);font-size:13px;fill:#fff;font-weight:600}
+svg .pk{fill:var(--warm)}
+.pulse{animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+.big{font-family:var(--f-display);font-size:clamp(44px,9vw,116px);line-height:.98;letter-spacing:-.03em}
+
+@media (max-width:980px){
+  .card,.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 12}
+  .row{grid-template-columns:116px 1fr 76px}
+  .dots{display:none}
+  .slide{padding:88px 16px 48px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  svg .draw{stroke-dashoffset:0}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="mesh"><i></i><i></i><i></i><i></i></div>
+<div class="grain"></div>
+<div class="bar" id="bar"></div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo"><span class="dot">Қ</span> Қонақүй</div>
+    <div class="who">Топтық жұмыс · ЖИТ-31 · Мобильді құрылғыларды программалау</div>
+  </div>
+</header>
+
+<nav class="dots" id="dots"></nav>
+
+<!-- ============ 1. ТИТУЛ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">Топтық жоба · 2026</span>
+    <h1><span id="hero"></span></h1>
+    <p class="lead rv d1">Android Studio ортасында Java тілінде жазылған, SQLite деректер
+      базасымен жұмыс істейтін мобильді қосымша: нөмірлерді есепке алу, брондау,
+      іздеу, сұрыптау және статистика.</p>
+    <div class="bento rv d2" style="margin-top:34px">
+      <div class="card c4">
+        <div class="ico">01</div>
+        <h3>Сәбит Абзал</h3>
+        <p class="sm dim">Деректер базасы: кестелер, SQL сұраныстар, DbHelper класы, архитектура.</p>
+        <span class="tag g">SQLite · DbHelper</span>
+      </div>
+      <div class="card c4">
+        <div class="ico">02</div>
+        <h3>Сатар Ақтоты</h3>
+        <p class="sm dim">Пайдаланушы интерфейсі: экрандар, макеттер, адаптерлер, диалогтар.</p>
+        <span class="tag b">UI · Layout · Adapter</span>
+      </div>
+      <div class="card c4">
+        <div class="ico">03</div>
+        <h3>Саяхмет Жайық</h3>
+        <p class="sm dim">Брондау логикасы, есептеулер, тестілеу, LogCat арқылы жөндеу.</p>
+        <span class="tag w">Logic · Test · Debug</span>
+      </div>
+    </div>
+    <p class="sm dim rv d3" style="margin-top:26px">↓ Беттеу: тінтуір дөңгелегі, ↑ ↓ немесе Space пернелері</p>
+  </div>
+</section>
+
+<!-- ============ 2. САЛА ТРЕНДТЕРІ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">01 · Сала трендтері</span>
+    <h2 class="rv d1">Қонақжайлылық саласы 2025–2026:<br><span class="grad">бес нақты өзгеріс</span></h2>
+    <div class="bento" style="margin-top:26px">
+      <div class="card c6 rv d1">
+        <span class="tag g">01</span>
+        <h3 style="margin-top:10px">Қағазсыз тіркеу</h3>
+        <p class="sm dim">Ресепшндегі қағаз журнал планшет пен телефонға көшіп жатыр.
+          Сондықтан есепке алу бағдарламасы ең алдымен мобильді болуы керек.</p>
+      </div>
+      <div class="card c6 rv d2">
+        <span class="tag b">02</span>
+        <h3 style="margin-top:10px">Офлайн жұмыс істейтін база</h3>
+        <p class="sm dim">Интернет үзілген кезде де жұмыс тоқтамауы тиіс. SQLite базасы
+          құрылғының ішінде орналасқандықтан, қосымша желіге мүлде тәуелді емес.</p>
+      </div>
+      <div class="card c4 rv d3">
+        <span class="tag w">03</span>
+        <h3 style="margin-top:10px">Динамикалық баға</h3>
+        <p class="sm dim">Баға маусымға, бос нөмір санына қарай өзгереді. Бағаны бір рет
+          жазып қою жеткіліксіз — UPDATE операциясы қажет.</p>
+      </div>
+      <div class="card c4 rv d4">
+        <span class="tag r">04</span>
+        <h3 style="margin-top:10px">Деректерге негізделген шешім</h3>
+        <p class="sm dim">Қай нөмір табысты, қай санат бос тұрады — бұл сұрақтарға
+          GROUP BY және JOIN сұраныстары жауап береді.</p>
+      </div>
+      <div class="card c4 rv d5">
+        <span class="tag g">05</span>
+        <h3 style="margin-top:10px">Шағын бизнеске қолжетімділік</h3>
+        <p class="sm dim">Үлкен PMS жүйелері 16 нөмірлі қонақүйге қымбат. Қарапайым
+          Android қосымшасы — нақты әрі тегін шешім.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. МӘСЕЛЕ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">02 · Мәселе</span>
+    <h2 class="rv d1">Әкімшінің бір күні:<br><span class="grad">дәптер, қалам және қателер</span></h2>
+    <div class="bento" style="margin-top:24px">
+      <div class="card c7 rv d2">
+        <h3>Сюжет</h3>
+        <p class="sm">Таңғы сағат сегіз. Әкімшінің алдында — дәптер. Онда 16 нөмірдің
+          бағасы, қабаты, төсек саны қаламмен жазылған. Телефон шырылдайды:
+          «Екінші қабаттан, 40 мың теңгеден аспайтын нөмір бар ма?»</p>
+        <p class="sm">Дәптердің беттері ақтарылады. Екі минут. Қонақ күтеді.
+          Келесі қоңырау: «Люкс нөмірлердің орташа бағасы қанша?» — бұл сұраққа
+          дәптер мүлде жауап бермейді.</p>
+        <p class="sm dim">Қақтығыс: мәлімет бар, бірақ оны <b>сұрыптау, сүзу және
+          есептеу</b> мүмкін емес. Қорытынды: мәліметті қағазда емес, кестеде
+          сақтау керек — яғни деректер базасында.</p>
+      </div>
+      <div class="card c5 rv d3">
+        <h3>Клиенттің нақты қиындығы</h3>
+        <table style="margin-top:8px">
+          <tr><td>Нөмірді іздеу</td><td class="ok">2 мин → 2 сек</td></tr>
+          <tr><td>Бағаны жаңарту</td><td class="ok">қолмен → UPDATE</td></tr>
+          <tr><td>Брондау құнын есептеу</td><td class="ok">калькулятор → автоматты</td></tr>
+          <tr><td>Табыс есебі</td><td class="ok">мүмкін емес → JOIN</td></tr>
+          <tr><td>Қате мәлімет</td><td class="ok">жиі → валидация</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ШЕШІМ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">03 · Шешім</span>
+    <h2 class="rv d1">«Қонақүй» қосымшасы:<br><span class="grad">дәптердің орнына деректер базасы</span></h2>
+    <div class="bento" style="margin-top:26px">
+      <div class="card c3 rv d1"><div class="num grad" data-count="16">0</div>
+        <p class="sm dim">нөмір базада, 5 санат бойынша</p></div>
+      <div class="card c3 rv d2"><div class="num grad" data-count="12">0</div>
+        <p class="sm dim">брондау, екінші кестеде</p></div>
+      <div class="card c3 rv d3"><div class="num grad" data-count="4">0</div>
+        <p class="sm dim">экран: тізім, нөмір, қосу, статистика</p></div>
+      <div class="card c3 rv d4"><div class="num grad" data-count="25">0</div>
+        <p class="sm dim">SQL әдісі DbHelper класында</p></div>
+      <div class="card c6 rv d4">
+        <h3>Не істейді</h3>
+        <p class="sm dim">Нөмірлерді үш режимде іздеу, төрт тәсілмен сұрыптау,
+          жаңа нөмір қосу (валидациямен), баға мен төсек санын жаңарту,
+          нөмірді брондауларымен бірге жою, брондау құнын автоматты есептеу,
+          санаттар мен нөмірлер бойынша статистика шығару.</p>
+      </div>
+      <div class="card c6 rv d5">
+        <h3>Неге Android + SQLite</h3>
+        <p class="sm dim">Қосымша ресепшндегі планшетта да, әкімшінің телефонында да
+          жұмыс істейді. База құрылғының жадында — сервер, қосымша төлем, интернет
+          қажет емес. Барлық мәлімет <span class="tag g">hotel.db</span> файлында.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. АРХИТЕКТУРА ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">04 · Архитектура</span>
+    <h2 class="rv d1">Қосымшаның құрылымы</h2>
+    <p class="lead rv d1">Жоба үш қабатқа бөлінген: модель, деректер және интерфейс.
+      Activity кластары SQL жазбайды — олар тек DbHelper әдістерін шақырады.</p>
+    <div class="bento" style="margin-top:24px">
+      <div class="card c4 rv d2">
+        <span class="tag w">Модель</span>
+        <h3 style="margin-top:10px">Room · Booking</h3>
+        <p class="sm dim">Кестенің бір жолын сақтайтын қарапайым кластар.
+          Room ішінде <span class="tag">pricePerBed()</span>,
+          <span class="tag">repairAge()</span> сияқты көмекші әдістер бар.</p>
+      </div>
+      <div class="card c4 rv d3">
+        <span class="tag g">Деректер</span>
+        <h3 style="margin-top:10px">DbHelper</h3>
+        <p class="sm dim">SQLiteOpenHelper-ден мұра алады. Кестелерді құрады,
+          бастапқы мәліметті жазады, барлық SELECT / INSERT / UPDATE / DELETE
+          сұраныстарын орындайды.</p>
+      </div>
+      <div class="card c4 rv d4">
+        <span class="tag b">Интерфейс</span>
+        <h3 style="margin-top:10px">4 Activity + 2 Adapter</h3>
+        <p class="sm dim">MainActivity, RoomActivity, AddRoomActivity, StatsActivity;
+          RoomAdapter және BookingAdapter ListView жолдарын құрады.</p>
+      </div>
+      <div class="card c12 rv d5">
+        <div class="codehead"><div class="dotset"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div> жоба құрылымы</div>
+<pre>app/src/main/
+├── java/com/example/hotel/
+│   ├── <span class="fn">Room.java</span>            <span class="cm">// нөмір моделі</span>
+│   ├── <span class="fn">Booking.java</span>         <span class="cm">// брондау моделі</span>
+│   ├── <span class="fn">DbHelper.java</span>        <span class="cm">// SQLite: 2 кесте, 25 әдіс</span>
+│   ├── <span class="fn">RoomAdapter.java</span>     <span class="cm">// нөмірлер тізімі</span>
+│   ├── <span class="fn">BookingAdapter.java</span>  <span class="cm">// брондаулар тізімі</span>
+│   ├── <span class="fn">MainActivity.java</span>    <span class="cm">// тізім + іздеу + сұрыптау</span>
+│   ├── <span class="fn">RoomActivity.java</span>    <span class="cm">// нөмір + брондаулар</span>
+│   ├── <span class="fn">AddRoomActivity.java</span> <span class="cm">// қосу + валидация</span>
+│   └── <span class="fn">StatsActivity.java</span>   <span class="cm">// GROUP BY, JOIN</span>
+└── res/layout/   <span class="cm">10 макет: activity_*, item_*, dialog_*, header_filter</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ДЕРЕКТЕР БАЗАСЫ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">05 · Деректер базасы</span>
+    <h2 class="rv d1">Екі кесте, бір байланыс</h2>
+    <div class="bento" style="margin-top:20px">
+      <div class="card c7 rv d2">
+        <svg viewBox="0 0 560 330" width="100%" height="auto" aria-label="ER схема">
+          <rect x="14" y="20" width="220" height="238" rx="14" fill="rgba(25,198,166,.07)"
+                stroke="rgba(25,198,166,.5)" class="draw" stroke-width="1.5"/>
+          <text class="ttl" x="30" y="46">rooms — нөмірлер</text>
+          <text x="30" y="72" class="pk">_id · INTEGER PK</text>
+          <text x="30" y="94">number · TEXT UNIQUE</text>
+          <text x="30" y="116">category · TEXT</text>
+          <text x="30" y="138">floor · INTEGER</text>
+          <text x="30" y="160">beds · INTEGER</text>
+          <text x="30" y="182">price · INTEGER</text>
+          <text x="30" y="204">area · INTEGER</text>
+          <text x="30" y="226">year_repair · INTEGER</text>
+
+          <rect x="326" y="20" width="220" height="216" rx="14" fill="rgba(74,157,255,.07)"
+                stroke="rgba(74,157,255,.5)" class="draw" stroke-width="1.5"/>
+          <text class="ttl" x="342" y="46">bookings — брондаулар</text>
+          <text x="342" y="72" class="pk">_id · INTEGER PK</text>
+          <text x="342" y="94" fill="#ffb454">room_id · FK → rooms</text>
+          <text x="342" y="116">guest · TEXT</text>
+          <text x="342" y="138">nights · INTEGER</text>
+          <text x="342" y="160">persons · INTEGER</text>
+          <text x="342" y="182">cost · INTEGER</text>
+          <text x="342" y="204">date · TEXT</text>
+
+          <path d="M234 100 C280 100 280 94 326 94" fill="none" stroke="#ffb454"
+                stroke-width="1.8" class="draw"/>
+          <circle cx="234" cy="100" r="4" fill="#ffb454" class="pulse"/>
+          <circle cx="326" cy="94" r="4" fill="#ffb454" class="pulse"/>
+          <text x="248" y="86" fill="#ffb454">1 : көп</text>
+
+          <text x="30" y="296" fill="#8e9aa8">cost = nights × price — брондау құны</text>
+          <text x="30" y="316" fill="#8e9aa8">нөмір жойылса, оның брондаулары да жойылады</text>
+        </svg>
+      </div>
+      <div class="card c5 rv d3">
+        <div class="codehead">DbHelper.onCreate()</div>
+<pre>db.execSQL(<span class="s">"CREATE TABLE rooms ("</span>
+  + <span class="s">"_id INTEGER PRIMARY KEY AUTOINCREMENT, "</span>
+  + <span class="s">"number TEXT NOT NULL UNIQUE, "</span>
+  + <span class="s">"category TEXT NOT NULL, "</span>
+  + <span class="s">"floor INTEGER NOT NULL, "</span>
+  + <span class="s">"beds INTEGER NOT NULL, "</span>
+  + <span class="s">"price INTEGER NOT NULL, "</span>
+  + <span class="s">"area INTEGER NOT NULL, "</span>
+  + <span class="s">"year_repair INTEGER NOT NULL)"</span>);
+
+<span class="cm">// екінші кестеде сыртқы кілт бар</span>
+  + <span class="s">"FOREIGN KEY(room_id) REFERENCES "</span>
+  + <span class="s">"rooms(_id))"</span>);</pre>
+        <p class="xs dim" style="margin-top:10px">UNIQUE — бір нөмір екі рет қосылмайды.
+          FOREIGN KEY — брондау тек бар нөмірге жасалады.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. НЕГІЗГІ СҰРАНЫСТАР ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">06 · Негізгі сұраныстар</span>
+    <h2 class="rv d1">Тапсырманың үш тармағы — үш әдіс</h2>
+    <div class="bento" style="margin-top:20px">
+      <div class="card c12 rv d2">
+        <div class="codehead">DbHelper.java · а) санат, ә) қабат + баға, б) орташадан арзан</div>
+<pre><span class="cm">/** а) Берілген санаттағы барлық нөмірлер. */</span>
+<span class="k">public</span> List&lt;Room&gt; <span class="fn">byCategory</span>(String category) {
+    Log.i(TAG, <span class="s">"а) санат = "</span> + category);
+    <span class="k">return</span> readRooms(R_CATEGORY + <span class="s">" = ?"</span>, <span class="k">new</span> String[]{category});
+}
+
+<span class="cm">/** ә) Берілген қабаттағы, бағасы шектен аспайтын нөмірлер. */</span>
+<span class="k">public</span> List&lt;Room&gt; <span class="fn">byFloorAndPrice</span>(<span class="k">int</span> floor, <span class="k">int</span> maxPrice) {
+    Log.i(TAG, <span class="s">"ә) қабат = "</span> + floor + <span class="s">", бағасы &lt;= "</span> + maxPrice);
+    <span class="k">return</span> readRooms(R_FLOOR + <span class="s">" = ? AND "</span> + R_PRICE + <span class="s">" &lt;= ?"</span>,
+            <span class="k">new</span> String[]{String.valueOf(floor), String.valueOf(maxPrice)});
+}
+
+<span class="cm">/** б) Бағасы орташа бағадан арзан нөмірлер. */</span>
+<span class="k">public</span> List&lt;Room&gt; <span class="fn">cheaperThanAverage</span>() {
+    <span class="k">int</span> avg = averagePrice();          <span class="cm">// SELECT AVG(price) FROM rooms</span>
+    Log.i(TAG, <span class="s">"б) орташа баға = "</span> + avg);
+    <span class="k">return</span> readRooms(R_PRICE + <span class="s">" &lt; ?"</span>, <span class="k">new</span> String[]{String.valueOf(avg)});
+}</pre>
+      </div>
+      <div class="card c6 rv d3">
+        <h3>Неліктен бір ғана readRooms()</h3>
+        <p class="sm dim">Үш әдіс де бір жалпы әдісті шақырады: ол
+          <span class="tag">query()</span> орындайды, Cursor бойынша жүріп Room
+          объектілерін жинайды және <b>finally</b> блогында Cursor-ды жабады.
+          Нәтижесінде код қайталанбайды, ресурс ағып кетпейді.</p>
+      </div>
+      <div class="card c6 rv d4">
+        <h3>Параметр ретінде «?» белгісі</h3>
+        <p class="sm dim">Мән жолға тікелей қосылмайды, <span class="tag g">selectionArgs</span>
+          массиві арқылы беріледі. Бұл SQL-инъекциядан қорғайды және апострофтар
+          мен бос орындар бар мәтінмен де дұрыс жұмыс істейді.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. CRUD ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">07 · CRUD</span>
+    <h2 class="rv d1">Қосу, жаңарту, жою</h2>
+    <div class="bento" style="margin-top:20px">
+      <div class="card c6 rv d2">
+        <div class="codehead">INSERT · ContentValues</div>
+<pre>ContentValues v = <span class="k">new</span> ContentValues();
+v.put(R_NUMBER, number);
+v.put(R_CATEGORY, category);
+v.put(R_PRICE, price);
+<span class="k">long</span> id = getWritableDatabase()
+        .insert(T_ROOMS, <span class="k">null</span>, v);
+<span class="k">if</span> (id == -<span class="n">1</span>) Log.e(TAG, <span class="s">"INSERT сәтсіз"</span>);</pre>
+        <p class="xs dim" style="margin-top:10px">insert() жаңа жолдың _id мәнін қайтарады,
+          қате болса −1.</p>
+      </div>
+      <div class="card c6 rv d3">
+        <div class="codehead">UPDATE · WHERE _id = ?</div>
+<pre>ContentValues v = <span class="k">new</span> ContentValues();
+v.put(R_PRICE, price);
+v.put(R_BEDS, beds);
+<span class="k">int</span> rows = getWritableDatabase().update(
+        T_ROOMS, v, R_ID + <span class="s">" = ?"</span>,
+        <span class="k">new</span> String[]{String.valueOf(id)});
+Log.i(TAG, <span class="s">"өзгерген жол = "</span> + rows);</pre>
+        <p class="xs dim" style="margin-top:10px">update() өзгерген жолдар санын қайтарады —
+          0 болса, мұндай _id жоқ.</p>
+      </div>
+      <div class="card c12 rv d4">
+        <div class="codehead">DELETE · екі кестеден дәйекті жою</div>
+<pre><span class="k">public</span> <span class="k">int</span> <span class="fn">deleteRoom</span>(<span class="k">int</span> id) {
+    SQLiteDatabase db = getWritableDatabase();
+    <span class="k">int</span> bookings = db.delete(T_BOOKINGS, B_ROOM + <span class="s">" = ?"</span>, <span class="k">new</span> String[]{String.valueOf(id)});
+    <span class="k">int</span> rows = db.delete(T_ROOMS, R_ID + <span class="s">" = ?"</span>, <span class="k">new</span> String[]{String.valueOf(id)});
+    Log.i(TAG, <span class="s">"DELETE: нөмір _id = "</span> + id + <span class="s">", онымен бірге "</span> + bookings + <span class="s">" брондау"</span>);
+    <span class="k">return</span> rows;
+}</pre>
+        <p class="xs dim" style="margin-top:10px">Алдымен «бала» жолдар (брондаулар), сосын
+          «ата-ана» жол (нөмір) жойылады — әйтпесе базада иесіз жазбалар қалады.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. СТАТИСТИКА ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">08 · Статистика</span>
+    <h2 class="rv d1">GROUP BY және JOIN: <span class="grad">сандар сөйлейді</span></h2>
+    <div class="bento" style="margin-top:20px">
+      <div class="card c7 rv d2">
+        <div class="codehead">statsByCategory() · GROUP BY ... HAVING</div>
+<pre><span class="k">SELECT</span> category, <span class="fn">COUNT</span>(*), <span class="fn">AVG</span>(price),
+       <span class="fn">AVG</span>(area), <span class="fn">MIN</span>(price)
+<span class="k">FROM</span> rooms
+<span class="k">GROUP BY</span> category
+<span class="k">HAVING</span> <span class="fn">COUNT</span>(*) &gt; <span class="n">0</span>
+<span class="k">ORDER BY</span> <span class="fn">COUNT</span>(*) <span class="k">DESC</span>, category <span class="k">ASC</span>;</pre>
+        <div class="codehead" style="margin-top:14px">revenueByRoom() · LEFT JOIN</div>
+<pre><span class="k">SELECT</span> r.number, r.category, <span class="fn">COUNT</span>(b._id),
+       <span class="fn">SUM</span>(b.nights), <span class="fn">SUM</span>(b.cost)
+<span class="k">FROM</span> rooms r
+<span class="k">LEFT JOIN</span> bookings b <span class="k">ON</span> b.room_id = r._id
+<span class="k">GROUP BY</span> r._id
+<span class="k">ORDER BY</span> <span class="fn">SUM</span>(b.cost) <span class="k">DESC</span>;</pre>
+      </div>
+      <div class="card c5 rv d3">
+        <h3>Санаттар бойынша нөмір саны</h3>
+        <div class="bars" style="margin-top:14px">
+          <div class="row"><span>Стандарт</span><span class="track"><b class="fill" data-w="100"></b></span><span class="dim">5</span></div>
+          <div class="row"><span>Бизнес</span><span class="track"><b class="fill" data-w="60"></b></span><span class="dim">3</span></div>
+          <div class="row"><span>Люкс</span><span class="track"><b class="fill" data-w="60"></b></span><span class="dim">3</span></div>
+          <div class="row"><span>Отбасылық</span><span class="track"><b class="fill" data-w="60"></b></span><span class="dim">3</span></div>
+          <div class="row"><span>Жартылай люкс</span><span class="track"><b class="fill" data-w="40"></b></span><span class="dim">2</span></div>
+        </div>
+        <h3 style="margin-top:22px">Табыс бойынша үздік нөмірлер</h3>
+        <div class="bars" style="margin-top:12px">
+          <div class="row"><span>№204 Отбасылық</span><span class="track"><b class="fill w" data-w="100"></b></span><span class="dim">260 000</span></div>
+          <div class="row"><span>№404 Отбасылық</span><span class="track"><b class="fill w" data-w="98"></b></span><span class="dim">256 000</span></div>
+          <div class="row"><span>№303 Люкс</span><span class="track"><b class="fill w" data-w="90"></b></span><span class="dim">234 000</span></div>
+          <div class="row"><span>№202 Жарт. люкс</span><span class="track"><b class="fill w" data-w="58"></b></span><span class="dim">152 000</span></div>
+        </div>
+        <p class="xs dim" style="margin-top:12px">Бастапқы мәліметтер бойынша жалпы табыс —
+          1 497 000 тг, 12 брондау, 32 тәулік.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. ИНТЕРФЕЙС ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">09 · Интерфейс</span>
+    <h2 class="rv d1">Экрандар</h2>
+    <p class="lead rv d1">Барлық экран стандартты Android виджеттерімен жасалған:
+      Toolbar, ListView, RadioGroup, Spinner, EditText, Button, AlertDialog.</p>
+    <div class="phones rv d2" style="margin-top:26px">
+      <div class="phone"><img src="скрины/01.png" alt="Нөмірлер тізімі"><div class="cap">Негізгі тізім</div></div>
+      <div class="phone"><img src="скрины/03.png" alt="Санат бойынша іздеу"><div class="cap">а) Санат бойынша іздеу</div></div>
+      <div class="phone"><img src="скрины/09.png" alt="Нөмір туралы"><div class="cap">Нөмір + брондаулар</div></div>
+      <div class="phone"><img src="скрины/20.png" alt="Статистика"><div class="cap">Статистика</div></div>
+    </div>
+    <p class="sm dim rv d3" style="margin-top:20px">Нөмірді басу — толық мәлімет,
+      ұзақ басу — өзгерту немесе жою. Мәзірде: нөмір қосу, статистика,
+      ескі нөмірлерді жою, бастапқы мәліметтер.</p>
+  </div>
+</section>
+
+<!-- ============ 11. ТЕСТІЛЕУ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">10 · Тестілеу және жөндеу</span>
+    <h2 class="rv d1">Әр функция эмуляторда тексерілді</h2>
+    <div class="bento" style="margin-top:20px">
+      <div class="card c7 rv d2">
+        <table>
+          <tr><th>Тексеру</th><th>Күтілген нәтиже</th><th>Нәтиже</th></tr>
+          <tr><td>а) санат «Люкс»</td><td>3 нөмір</td><td class="ok">сәйкес</td></tr>
+          <tr><td>ә) 2-қабат, ≤ 40 000 тг</td><td>3 нөмір</td><td class="ok">сәйкес</td></tr>
+          <tr><td>б) орташадан (42 812 тг) арзан</td><td>10 нөмір</td><td class="ok">сәйкес</td></tr>
+          <tr><td>Брондау қосу (3 тәулік)</td><td>3 × 78 000 = 234 000 тг</td><td class="ok">сәйкес</td></tr>
+          <tr><td>Қайталанатын нөмір 405</td><td>«базада бар» хабары</td><td class="ok">сәйкес</td></tr>
+          <tr><td>Адам саны &gt; төсек саны</td><td>брондау қабылданбайды</td><td class="ok">сәйкес</td></tr>
+          <tr><td>Жөндеуі 2020-дан ескі нөмірлер</td><td>16 → 13 нөмір</td><td class="ok">сәйкес</td></tr>
+          <tr><td>Бастапқы мәліметтер</td><td>16 нөмір, 12 брондау</td><td class="ok">сәйкес</td></tr>
+        </table>
+      </div>
+      <div class="card c5 rv d3">
+        <div class="codehead">LogCat · HOTEL_DB / HOTEL_UI</div>
+<pre><span class="n">I</span>/HOTEL_DB: onCreate(): hotel.db
+<span class="n">I</span>/HOTEL_DB: Бастапқы 16 нөмір қосылды
+<span class="n">I</span>/HOTEL_DB: а) санат = Люкс
+<span class="n">D</span>/HOTEL_DB: readRooms(): 3 жол оқылды
+<span class="n">I</span>/HOTEL_UI: Нәтиже: а) «Люкс» — 3 нөмір
+<span class="n">I</span>/HOTEL_DB: UPDATE: _id = 11, баға = 82000
+<span class="n">W</span>/HOTEL_DB: DELETE: 2020-дан ескі 4 нөмір
+<span class="n">E</span>/HOTEL_ADD: Валидация қатесі: нөмір бар</pre>
+        <p class="xs dim" style="margin-top:10px">Әр класта өз TAG-і бар, сондықтан
+          LogCat сүзгісі арқылы базаның және интерфейстің жұмысын бөлек бақылауға
+          болады. Қателер Log.e, ескертулер Log.w деңгейінде жазылады.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. ЖОСПАР vs ФАКТ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">11 · Нәтиже</span>
+    <h2 class="rv d1">Жоспар және факт</h2>
+    <div class="bento" style="margin-top:22px">
+      <div class="card c8 rv d2">
+        <table>
+          <tr><th>Жоспарланған</th><th>Орындалғаны</th></tr>
+          <tr><td>Бір кесте, қарапайым тізім</td><td class="ok">Екі кесте, 1 : көп байланыс</td></tr>
+          <tr><td>Іздеудің 1 режимі</td><td class="ok">3 режим + LIKE іздеу әдісі</td></tr>
+          <tr><td>Сұрыптау жоқ</td><td class="ok">4 нұсқа (Spinner)</td></tr>
+          <tr><td>Статистика — қосымша</td><td class="ok">Жеке экран: GROUP BY, JOIN</td></tr>
+          <tr><td>Валидация — минимум</td><td class="ok">7 тексеру + LogCat</td></tr>
+        </table>
+      </div>
+      <div class="card c4 rv d3">
+        <h3>Үйренгеніміз</h3>
+        <p class="sm dim">Екі кестемен жұмыс істегенде жою тәртібі маңызды:
+          «бала» жазбаларды алдымен жою керек.</p>
+        <p class="sm dim">selectionArgs мәндері TEXT болып берілгендіктен,
+          есептеуді Java жағында жасап, бағанмен салыстыру сенімдірек.</p>
+        <p class="sm dim">Cursor-ды finally блогында жабу — міндетті әдет.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. ТОП ҮЛЕСІ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">12 · Топ жұмысы</span>
+    <h2 class="rv d1">Кім не істеді</h2>
+    <div class="steps" style="margin-top:22px">
+      <div class="step rv d1"><b>1</b>
+        <div><h3>Сәбит Абзал — деректер қабаты</h3>
+        <p class="sm dim">rooms және bookings кестелерін жобалау, DbHelper класы,
+          SELECT / INSERT / UPDATE / DELETE әдістері, GROUP BY және JOIN сұраныстары,
+          бастапқы 28 жазба.</p></div></div>
+      <div class="step rv d2"><b>2</b>
+        <div><h3>Сатар Ақтоты — интерфейс</h3>
+        <p class="sm dim">10 макет, Toolbar және мәзір, ListView адаптерлері,
+          іздеу панелі, диалогтар (өзгерту, жою, брондау), статистика экранының
+          құрылымы.</p></div></div>
+      <div class="step rv d3"><b>3</b>
+        <div><h3>Саяхмет Жайық — логика және тестілеу</h3>
+        <p class="sm dim">Брондау құнын есептеу, енгізілген мәліметтерді тексеру
+          (валидация), LogCat арқылы жөндеу, эмуляторда 8 сценарий бойынша тестілеу,
+          есеп материалдарын дайындау.</p></div></div>
+      <div class="step rv d4"><b>4</b>
+        <div><h3>Бірге</h3>
+        <p class="sm dim">Тақырыпты таңдау, кестелердің құрылымын келісу,
+          қосымшаны жинау және APK-ға шығару, есеп пен презентацияны дайындау.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. ПАЙДАЛАНУ ============ -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker rv">13 · Қолдану</span>
+    <h2 class="rv d1">Жаңа қызметкер 5 минутта үйренеді</h2>
+    <div class="bento" style="margin-top:22px">
+      <div class="card c4 rv d1"><div class="ico">1</div><h3>Нөмір табу</h3>
+        <p class="sm dim">Режимді таңдап, өрісті толтырып «Іздеу» батырмасын басу.
+          Қорытынды жасыл жазумен көрінеді.</p></div>
+      <div class="card c4 rv d2"><div class="ico">2</div><h3>Брондау жасау</h3>
+        <p class="sm dim">Нөмірді басып, «Брондау қосу» → қонақтың аты, тәулік
+          және адам саны. Құны автоматты есептеледі.</p></div>
+      <div class="card c4 rv d3"><div class="ico">3</div><h3>Бағаны жаңарту</h3>
+        <p class="sm dim">Тізімде нөмірді ұзақ басып «Өзгерту» → жаңа баға.
+          База сол сәтте жаңарады.</p></div>
+      <div class="card c6 rv d4"><div class="ico">4</div><h3>Есеп шығару</h3>
+        <p class="sm dim">Мәзір → «Статистика»: нөмір саны, брондау саны,
+          толу пайызы, орташа/ең арзан/ең қымбат баға, санаттар кесімі және
+          нөмірлердің табысы.</p></div>
+      <div class="card c6 rv d5"><div class="ico">5</div><h3>Қателессе</h3>
+        <p class="sm dim">Мәзір → «Бастапқы мәліметтер»: база бастапқы 16 нөмір
+          және 12 брондау күйіне қайтады. Сондықтан үйрену кезінде қорықпай
+          эксперимент жасауға болады.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. ҚОРЫТЫНДЫ ============ -->
+<section class="slide">
+  <div class="wrap" style="text-align:center">
+    <span class="kicker rv">Қорытынды</span>
+    <div class="big rv d1" style="margin:18px 0 10px"><span class="grad">Дәптер → База</span></div>
+    <p class="lead rv d2" style="margin:0 auto 26px">Топтық жұмыс барысында Android Studio
+      ортасында Java тілінде SQLite деректер базасымен жұмыс істейтін толық қосымша
+      жасалды: екі кесте, 1 : көп байланыс, үш іздеу режимі, CRUD операциялары,
+      агрегат функциялар, JOIN және LogCat арқылы жөндеу.</p>
+    <div class="bento rv d3">
+      <div class="card c3"><div class="num grad" data-count="2">0</div><p class="sm dim">кесте</p></div>
+      <div class="card c3"><div class="num grad" data-count="9">0</div><p class="sm dim">Java класы</p></div>
+      <div class="card c3"><div class="num grad" data-count="10">0</div><p class="sm dim">макет</p></div>
+      <div class="card c3"><div class="num grad" data-count="25">0</div><p class="sm dim">скриншот</p></div>
+    </div>
+    <p class="rv d4" style="margin-top:30px;font-family:var(--f-display);font-size:19px">
+      Сәбит Абзал · Сатар Ақтоты · Саяхмет Жайық</p>
+    <p class="sm dim rv d5">ЖИТ-31 · Мобильді құрылғыларды программалау · Назарларыңызға рақмет!</p>
+  </div>
+</section>
+
+<script>
+/* ---------- Кіру анимациясы ---------- */
+const io = new IntersectionObserver((es)=>{
+  es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+},{threshold:.18});
+document.querySelectorAll('.rv,.card').forEach(el=>io.observe(el));
+
+/* ---------- Диаграмма жолақтары ---------- */
+const bio = new IntersectionObserver((es)=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.fill').forEach((f,i)=>{
+        setTimeout(()=>f.style.width=f.dataset.w+'%', 90*i);
+      });
+      bio.unobserve(e.target);
+    }
+  });
+},{threshold:.3});
+document.querySelectorAll('.bars').forEach(el=>bio.observe(el));
+
+/* ---------- Сандарды санау ---------- */
+const cio = new IntersectionObserver((es)=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el=e.target, to=+el.dataset.count, t0=performance.now(), d=1100;
+    const step=(t)=>{
+      const p=Math.min(1,(t-t0)/d), v=Math.round(to*(1-Math.pow(1-p,3)));
+      el.textContent=v; if(p<1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step); cio.unobserve(el);
+  });
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* ---------- Тақырыптағы сөздер ---------- */
+const words=['Қонақүй','—','нөмірлерді','басқару','қосымшасы'];
+const hero=document.getElementById('hero');
+words.forEach((w,i)=>{
+  const s=document.createElement('span');
+  s.className='word'; s.textContent=w+' ';
+  s.style.animationDelay=(0.12*i)+'s';
+  if(i===0||i===4) s.classList.add('grad');
+  hero.appendChild(s);
+});
+
+/* ---------- Прогресс және нүктелер ---------- */
+const slides=[...document.querySelectorAll('.slide')];
+const dots=document.getElementById('dots');
+slides.forEach((s,i)=>{
+  const b=document.createElement('b');
+  b.title='Слайд '+(i+1);
+  b.onclick=()=>s.scrollIntoView({behavior:'smooth'});
+  dots.appendChild(b);
+});
+const bs=[...dots.children];
+const onScroll=()=>{
+  const h=document.documentElement;
+  document.getElementById('bar').style.width=
+    (h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+  let cur=0;
+  slides.forEach((s,i)=>{ if(s.getBoundingClientRect().top<=window.innerHeight*0.45) cur=i; });
+  bs.forEach((b,i)=>b.classList.toggle('on',i===cur));
+};
+addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+/* ---------- Пернетақта навигациясы ---------- */
+let idx=0;
+const go=(d)=>{
+  idx=Math.max(0,Math.min(slides.length-1,idx+d));
+  slides[idx].scrollIntoView({behavior:'smooth'});
+};
+addEventListener('keydown',(e)=>{
+  slides.forEach((s,i)=>{ if(s.getBoundingClientRect().top<=window.innerHeight*0.45) idx=i; });
+  if(['ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(1);}
+  if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}
+  if(e.key==='Home'){e.preventDefault();idx=0;slides[0].scrollIntoView({behavior:'smooth'});}
+  if(e.key==='End'){e.preventDefault();idx=slides.length-1;slides[idx].scrollIntoView({behavior:'smooth'});}
+});
+
+/* ---------- Карточкадағы жарық ---------- */
+document.querySelectorAll('.card').forEach(c=>{
+  c.addEventListener('mousemove',(e)=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    c.style.setProperty('--my',(e.clientY-r.top)+'px');
+  });
+});
+</script>
+</body>
+</html>

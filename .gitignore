@@ -1,0 +1,12 @@
+# Android / Gradle
+Hotel/.gradle/
+Hotel/build/
+Hotel/app/build/
+Hotel/local.properties
+Hotel/.idea/
+Hotel/captures/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
