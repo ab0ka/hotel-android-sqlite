@@ -27,6 +27,12 @@ public class AddRoomActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        User me = Session.current(this);
+        if (me == null || !me.isAdmin()) {
+            Log.w(TAG, "Қолжетімсіз: нөмір қосу тек әкімшіге");
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_add_room);
         Ui.applyInsets(findViewById(R.id.root), findViewById(R.id.appbar));
 

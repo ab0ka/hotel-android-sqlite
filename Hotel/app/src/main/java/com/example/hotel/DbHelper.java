@@ -27,10 +27,11 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String TAG = "HOTEL_DB";
 
     private static final String DB_NAME = "hotel.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public static final String T_ROOMS = "rooms";
     public static final String T_BOOKINGS = "bookings";
+    public static final String T_USERS = "users";
 
     public static final String R_ID = "_id";
     public static final String R_NUMBER = "number";
@@ -53,8 +54,16 @@ public class DbHelper extends SQLiteOpenHelper {
             R_ID, R_NUMBER, R_CATEGORY, R_FLOOR, R_BEDS, R_PRICE, R_AREA, R_YEAR
     };
 
+    public static final String B_USER = "user_id";
+    public static final String B_CHECKIN = "checkin";
+    public static final String B_ARRIVAL = "arrival";
+    public static final String B_BREAKFAST = "breakfast";
+    public static final String B_TRANSFER = "transfer";
+    public static final String B_PAY = "pay";
+
     private static final String[] BOOKING_COLUMNS = {
-            B_ID, B_ROOM, B_GUEST, B_NIGHTS, B_PERSONS, B_COST, B_DATE
+            B_ID, B_ROOM, B_GUEST, B_NIGHTS, B_PERSONS, B_COST, B_DATE,
+            B_USER, B_CHECKIN, B_ARRIVAL, B_BREAKFAST, B_TRANSFER, B_PAY
     };
 
     /** Қонақүйде қолданылатын нөмір санаттары. */
@@ -84,6 +93,12 @@ public class DbHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.setForeignKeyConstraintsEnabled(true);
+    }
+
     // ------------------------------------------------------------------
     // Базаны құру және бастапқы мәліметтер
     // ------------------------------------------------------------------
@@ -110,18 +125,77 @@ public class DbHelper extends SQLiteOpenHelper {
                 + B_PERSONS + " INTEGER NOT NULL, "
                 + B_COST + " INTEGER NOT NULL, "
                 + B_DATE + " TEXT NOT NULL, "
+                + B_USER + " INTEGER NOT NULL DEFAULT 0, "
+                + B_CHECKIN + " TEXT NOT NULL DEFAULT '', "
+                + B_ARRIVAL + " TEXT NOT NULL DEFAULT '', "
+                + B_BREAKFAST + " INTEGER NOT NULL DEFAULT 0, "
+                + B_TRANSFER + " INTEGER NOT NULL DEFAULT 0, "
+                + B_PAY + " TEXT NOT NULL DEFAULT '', "
                 + "FOREIGN KEY(" + B_ROOM + ") REFERENCES "
                 + T_ROOMS + "(" + R_ID + "))");
 
-        Log.i(TAG, "Екі кесте құрылды: " + T_ROOMS + ", " + T_BOOKINGS);
+        createUsers(db);
+
+        Log.i(TAG, "Үш кесте құрылды: " + T_ROOMS + ", " + T_BOOKINGS + ", " + T_USERS);
         fillRooms(db);
         fillBookings(db);
     }
 
+    /** users кестесі және екі демо-аккаунт: әкімші мен клиент. */
+    private void createUsers(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + T_USERS + " ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "username TEXT NOT NULL UNIQUE, "
+                + "pass TEXT NOT NULL, "
+                + "role TEXT NOT NULL, "
+                + "full_name TEXT NOT NULL)");
+        insertUser(db, "admin", "admin123", User.ADMIN, "Әкімші");
+        insertUser(db, "client", "client123", User.CLIENT, "Қонақ Клиентов");
+        Log.i(TAG, "users кестесі құрылды: admin және client демо-аккаунттары");
+    }
+
+    private void insertUser(SQLiteDatabase db, String username, String password,
+                            String role, String fullName) {
+        ContentValues v = new ContentValues();
+        v.put("username", username);
+        v.put("pass", hash(username, password));
+        v.put("role", role);
+        v.put("full_name", fullName);
+        db.insert(T_USERS, null, v);
+    }
+
+    /** Құпиясөз ашық күйде сақталмайды: SHA-256(логин + ":" + құпиясөз). */
+    static String hash(String username, String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest((username + ":" + password).getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : d) {
+                sb.append(String.format(Locale.US, "%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            // 1 -> 2: мәліметтер сақталады, тек жаңа баған мен кесте қосылады
+            Log.w(TAG, "onUpgrade(): 1 -> 2, bookings кестесіне бағандар және users қосылады");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_USER + " INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_CHECKIN + " TEXT NOT NULL DEFAULT ''");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_ARRIVAL + " TEXT NOT NULL DEFAULT ''");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_BREAKFAST + " INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_TRANSFER + " INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + T_BOOKINGS + " ADD COLUMN " + B_PAY + " TEXT NOT NULL DEFAULT ''");
+            createUsers(db);
+            return;
+        }
         Log.w(TAG, "onUpgrade(): " + oldVersion + " -> " + newVersion
                 + ", кестелер жойылып қайта құрылады");
+        db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + T_BOOKINGS);
         db.execSQL("DROP TABLE IF EXISTS " + T_ROOMS);
         onCreate(db);
@@ -409,6 +483,151 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    /** Брондау диалогының барлық өрістерімен жаңа брондау қосады. */
+    public long addBooking(int roomId, String guest, int nights, int persons, int userId,
+                           String checkin, String arrival, boolean breakfast,
+                           boolean transfer, String pay) {
+        Room room = roomById(roomId);
+        if (room == null) {
+            Log.e(TAG, "addBooking(): нөмір табылмады, _id = " + roomId);
+            return -1;
+        }
+        int cost = nights * room.getPrice();
+
+        ContentValues v = new ContentValues();
+        v.put(B_ROOM, roomId);
+        v.put(B_GUEST, guest);
+        v.put(B_NIGHTS, nights);
+        v.put(B_PERSONS, persons);
+        v.put(B_COST, cost);
+        v.put(B_DATE, today());
+        v.put(B_USER, userId);
+        v.put(B_CHECKIN, checkin);
+        v.put(B_ARRIVAL, arrival);
+        v.put(B_BREAKFAST, breakfast ? 1 : 0);
+        v.put(B_TRANSFER, transfer ? 1 : 0);
+        v.put(B_PAY, pay);
+
+        long id = getWritableDatabase().insert(T_BOOKINGS, null, v);
+        Log.i(TAG, "Жаңа брондау _id = " + id + ", нөмір = " + room.getNumber()
+                + ", " + nights + " тәулік x " + room.getPrice() + " тг = " + cost
+                + " тг, келу " + checkin + " " + arrival + ", пайдаланушы _id = " + userId);
+        return id;
+    }
+
+    private Booking readBooking(Cursor c) {
+        return new Booking(c.getInt(0), c.getInt(1), c.getString(2),
+                c.getInt(3), c.getInt(4), c.getInt(5), c.getString(6))
+                .details(c.getInt(7), c.getString(8), c.getString(9),
+                        c.getInt(10) == 1, c.getInt(11) == 1, c.getString(12));
+    }
+
+    /** Бір клиенттің барлық брондаулары, нөмір нөмірімен (JOIN). */
+    public List<Booking> bookingsOfUser(int userId) {
+        List<Booking> list = new ArrayList<>();
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery("SELECT b._id, b.room_id, b.guest, b.nights, "
+                    + "b.persons, b.cost, b.date, b.user_id, b.checkin, b.arrival, b.breakfast, "
+                    + "b.transfer, b.pay, r.number FROM bookings b JOIN rooms r "
+                    + "ON r._id = b.room_id WHERE b.user_id = ? "
+                    + "ORDER BY b.date DESC, b._id DESC", new String[]{String.valueOf(userId)});
+            while (c.moveToNext()) {
+                list.add(readBooking(c).withRoomNumber(c.getString(13)));
+            }
+            Log.d(TAG, "bookingsOfUser(" + userId + "): " + list.size() + " брондау");
+        } catch (Exception e) {
+            Log.e(TAG, "bookingsOfUser() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return list;
+    }
+
+    // ------------------------------------------------------------------
+    // Пайдаланушылар: кіру және тіркелу
+    // ------------------------------------------------------------------
+
+    /** Логин мен құпиясөз бойынша кіру. Сәтсіз болса null. */
+    public User login(String username, String password) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().query(T_USERS,
+                    new String[]{"_id", "username", "role", "full_name"},
+                    "username = ? AND pass = ?",
+                    new String[]{username, hash(username, password)}, null, null, null);
+            if (c.moveToFirst()) {
+                Log.i(TAG, "login(): кірді " + username + " (" + c.getString(2) + ")");
+                return new User(c.getInt(0), c.getString(1), c.getString(2), c.getString(3));
+            }
+            Log.w(TAG, "login(): қате логин немесе құпиясөз: " + username);
+        } catch (Exception e) {
+            Log.e(TAG, "login() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return null;
+    }
+
+    public boolean usernameExists(String username) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().query(T_USERS, new String[]{"_id"},
+                    "username = ?", new String[]{username}, null, null, null);
+            return c.getCount() > 0;
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+    }
+
+    /** Жаңа клиентті тіркейді (рөлі әрқашан client). Қате болса -1. */
+    public long register(String username, String password, String fullName) {
+        ContentValues v = new ContentValues();
+        v.put("username", username);
+        v.put("pass", hash(username, password));
+        v.put("role", User.CLIENT);
+        v.put("full_name", fullName);
+        long id = getWritableDatabase().insert(T_USERS, null, v);
+        Log.i(TAG, "register(): " + username + ", _id = " + id);
+        return id;
+    }
+
+    /** Есепті файлға жазуға арналған CSV мәтіні: нөмірлер және брондаулар. */
+    public String reportCsv() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Қонақүй: есеп\n");
+        sb.append("# нөмір саны;").append(count()).append('\n');
+        sb.append("# брондау саны;").append(bookingCount()).append('\n');
+        sb.append("# орташа баға;").append(averagePrice()).append('\n');
+        sb.append("# жалпы табыс;").append(totalRevenue()).append('\n');
+        sb.append("number;category;floor;beds;price;area;year_repair;bookings;revenue\n");
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery("SELECT r.number, r.category, r.floor, r.beds, "
+                    + "r.price, r.area, r.year_repair, COUNT(b._id), IFNULL(SUM(b.cost), 0) "
+                    + "FROM rooms r LEFT JOIN bookings b ON b.room_id = r._id "
+                    + "GROUP BY r._id ORDER BY r.number", null);
+            while (c.moveToNext()) {
+                for (int i = 0; i < 9; i++) {
+                    sb.append(c.getString(i)).append(i < 8 ? ';' : '\n');
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "reportCsv() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return sb.toString();
+    }
+
     /** Бір нөмірдің брондаулары (соңғысы жоғарыда). */
     public List<Booking> bookingsOf(int roomId) {
         List<Booking> list = new ArrayList<>();
@@ -416,10 +635,9 @@ public class DbHelper extends SQLiteOpenHelper {
         try {
             c = getReadableDatabase().query(T_BOOKINGS, BOOKING_COLUMNS,
                     B_ROOM + " = ?", new String[]{String.valueOf(roomId)},
-                    null, null, B_DATE + " DESC");
+                    null, null, B_DATE + " DESC, " + B_ID + " DESC");
             while (c.moveToNext()) {
-                list.add(new Booking(c.getInt(0), c.getInt(1), c.getString(2),
-                        c.getInt(3), c.getInt(4), c.getInt(5), c.getString(6)));
+                list.add(readBooking(c));
             }
             Log.d(TAG, "bookingsOf(" + roomId + "): " + list.size() + " брондау");
         } catch (Exception e) {

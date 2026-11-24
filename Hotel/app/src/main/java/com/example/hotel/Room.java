@@ -4,7 +4,7 @@ package com.example.hotel;
  * Қонақүй нөмірі туралы мәліметтерді сақтайтын модель класы.
  * Бір объект rooms кестесіндегі бір жолға сәйкес келеді.
  */
-public class Room {
+public class Room implements java.io.Serializable {
 
     private final int id;
     private final String number;

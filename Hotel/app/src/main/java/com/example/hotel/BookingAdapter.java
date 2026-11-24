@@ -32,8 +32,13 @@ public class BookingAdapter extends ArrayAdapter<Booking> {
         }
 
         ((TextView) row.findViewById(R.id.txtGuest)).setText(b.getGuest());
-        ((TextView) row.findViewById(R.id.txtInfo)).setText(b.getDate() + ", "
-                + b.getNights() + " тәулік, " + b.getPersons() + " адам");
+        String when = b.getCheckin().isEmpty() ? b.getDate()
+                : b.getCheckin() + (b.getArrival().isEmpty() ? "" : " " + b.getArrival());
+        String line = (b.getRoomNumber().isEmpty() ? "" : "№" + b.getRoomNumber() + ", ")
+                + when + ", " + b.getNights() + " тәулік, " + b.getPersons() + " адам";
+        String extras = b.extrasText();
+        ((TextView) row.findViewById(R.id.txtInfo)).setText(
+                extras.isEmpty() ? line : line + "\n" + extras);
         ((TextView) row.findViewById(R.id.txtCost)).setText(
                 RoomAdapter.money(b.getCost()) + " тг");
 

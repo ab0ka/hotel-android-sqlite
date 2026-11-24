@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen"
+    android:orientation="vertical">
+
+    <include layout="@layout/appbar" />
+
+    <TextView
+        style="@style/Text.Hotel.Display"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="16dp"
+        android:text="Менің брондауларым"
+        android:textSize="40sp" />
+
+    <TextView
+        android:id="@+id/txtSummary"
+        style="@style/Text.Hotel.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="14dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/rule" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/listMy"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/rule"
+            android:dividerHeight="1dp"
+            android:listSelector="@drawable/sel_row" />
+
+        <TextView
+            android:id="@+id/txtEmptyMy"
+            style="@style/Text.Hotel.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:text="Сізде әлі брондау жоқ. Нөмірді таңдап, «Брондау қосу» батырмасын басыңыз." />
+    </FrameLayout>
+
+    <TextView
+        style="@style/Text.Hotel.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Брондауды ұзақ басу: болдырмау." />
+</LinearLayout>

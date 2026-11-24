@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MODE_AVERAGE = 3;
 
     private DbHelper db;
+    private User me;
     private ListView listView;
     private RoomAdapter adapter;
     private final List<Room> data = new ArrayList<>();
@@ -68,11 +69,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate()");
+
+        // Кірмеген пайдаланушы кіру экранына жіберіледі
+        me = Session.current(this);
+        if (me == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
         Ui.applyInsets(findViewById(R.id.root), findViewById(R.id.appbar));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Қонақүй");
+        toolbar.setSubtitle(me.getFullName().equalsIgnoreCase(me.roleTitle())
+                ? me.roleTitle() : me.getFullName() + ", " + me.roleTitle());
         setSupportActionBar(toolbar);
 
         db = new DbHelper(this);
@@ -90,6 +103,11 @@ public class MainActivity extends AppCompatActivity {
         txtSql = header.findViewById(R.id.txtSql);
         txtEmpty = header.findViewById(R.id.txtEmpty);
         txtLedger = header.findViewById(R.id.txtLedger);
+        if (!me.isAdmin()) {
+            // Қаржы көрсеткіштері (орташа баға, жүктеме, табыс) тек әкімшіге
+            ((View) header.findViewById(R.id.statAvg).getParent().getParent())
+                    .setVisibility(View.GONE);
+        }
         boardFloors = header.findViewById(R.id.boardFloors);
         statAvg = header.findViewById(R.id.statAvg);
         statRevenue = header.findViewById(R.id.statRevenue);
@@ -133,8 +151,15 @@ public class MainActivity extends AppCompatActivity {
         });
         header.findViewById(R.id.btnFind).setOnClickListener(v -> find());
         header.findViewById(R.id.btnAll).setOnClickListener(v -> showAll());
-        findViewById(R.id.fabAdd).setOnClickListener(
-                v -> startActivity(new Intent(this, AddRoomActivity.class)));
+        // Төменгі батырма рөлге қарай: әкімшіге нөмір қосу, клиентке өз брондаулары
+        com.google.android.material.button.MaterialButton bottom = findViewById(R.id.fabAdd);
+        if (me.isAdmin()) {
+            bottom.setText("Нөмір қосу");
+            bottom.setOnClickListener(v -> startActivity(new Intent(this, AddRoomActivity.class)));
+        } else {
+            bottom.setText("Менің брондауларым");
+            bottom.setOnClickListener(v -> startActivity(new Intent(this, MyBookingsActivity.class)));
+        }
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Room r = (Room) parent.getItemAtPosition(position);
@@ -145,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
             Room r = (Room) parent.getItemAtPosition(position);
-            if (r != null) {
+            if (r != null && me.isAdmin()) {
                 editOrDelete(r);
                 return true;
             }
@@ -157,9 +182,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy()");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        refresh();
+        Log.d(TAG, "onResume()");
+        if (db != null) {
+            refresh();
+        }
     }
 
     /** Таңдалған режимге қарай енгізу өрістерін көрсетеді немесе жасырады. */
@@ -412,6 +464,7 @@ public class MainActivity extends AppCompatActivity {
     private void openRoom(Room r) {
         Intent intent = new Intent(this, RoomActivity.class);
         intent.putExtra(RoomActivity.EXTRA_ID, r.getId());
+        intent.putExtra(RoomActivity.EXTRA_ROOM, r); // Serializable: бүкіл объект беріледі
         startActivity(intent);
     }
 
@@ -489,11 +542,44 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /** Мәзір рөлге қарай өзгереді: клиентте басқару пункттері жоқ. */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean admin = me != null && me.isAdmin();
+        menu.findItem(R.id.action_stats).setVisible(admin);
+        menu.findItem(R.id.action_data).setVisible(admin);
+        menu.findItem(R.id.action_mybookings).setVisible(!admin);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_add) {
+        if (id == R.id.action_3d) {
+            startActivity(new Intent(this, Hotel3DActivity.class));
+            return true;
+
+        } else if (id == R.id.action_mybookings) {
+            startActivity(new Intent(this, MyBookingsActivity.class));
+            return true;
+
+        } else if (id == R.id.action_export) {
+            exportReport();
+            return true;
+
+        } else if (id == R.id.action_import) {
+            importReport();
+            return true;
+
+        } else if (id == R.id.action_logout) {
+            Session.clear(this);
+            Log.i(TAG, "Шықты: " + me.getUsername());
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return true;
+
+        } else if (id == R.id.action_add) {
             startActivity(new Intent(this, AddRoomActivity.class));
             return true;
 
@@ -522,6 +608,67 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // ------------------------------------------------------------------
+    // Файлмен жұмыс: есепті CSV файлға жазу және оқу
+    // ------------------------------------------------------------------
+
+    private java.io.File reportFile() {
+        java.io.File dir = getExternalFilesDir(null);
+        if (dir == null) {
+            dir = getFilesDir();
+        }
+        return new java.io.File(dir, "hotel_report.csv");
+    }
+
+    private void exportReport() {
+        java.io.File f = reportFile();
+        try (java.io.FileOutputStream out = new java.io.FileOutputStream(f)) {
+            out.write(db.reportCsv().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            Log.i(TAG, "Есеп файлға жазылды: " + f.getAbsolutePath() + ", " + f.length() + " байт");
+            new AlertDialog.Builder(this)
+                    .setTitle("Файл сақталды")
+                    .setMessage(f.getName() + ", " + f.length() + " байт\n\n" + f.getAbsolutePath())
+                    .setPositiveButton("Жақсы", null)
+                    .show();
+        } catch (java.io.IOException e) {
+            Log.e(TAG, "Файлға жазу қатесі", e);
+            Toast.makeText(this, "Файл сақталмады: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void importReport() {
+        java.io.File f = reportFile();
+        if (!f.exists()) {
+            Toast.makeText(this, "Алдымен есепті файлға сақтаңыз", Toast.LENGTH_LONG).show();
+            return;
+        }
+        try (java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(
+                new java.io.FileInputStream(f), java.nio.charset.StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+            TextView tv = new TextView(this);
+            tv.setText(sb.toString());
+            tv.setTextSize(11);
+            tv.setTypeface(android.graphics.Typeface.MONOSPACE);
+            tv.setTextColor(getColor(R.color.ink_2));
+            tv.setPadding(48, 8, 48, 8);
+            android.widget.ScrollView sv = new android.widget.ScrollView(this);
+            sv.addView(tv);
+            Log.i(TAG, "Файл оқылды: " + f.getName() + ", " + sb.length() + " таңба");
+            new AlertDialog.Builder(this)
+                    .setTitle(f.getName())
+                    .setView(sv)
+                    .setPositiveButton("Жабу", null)
+                    .show();
+        } catch (java.io.IOException e) {
+            Log.e(TAG, "Файлды оқу қатесі", e);
+            Toast.makeText(this, "Файл оқылмады: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void deleteOldDialog() {

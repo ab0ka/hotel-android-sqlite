@@ -37,21 +37,61 @@
 
 | | Функция | Что под капотом |
 |:---:|---|---|
+| 🔐 | **Вход и роли** admin и client: логин и пароль проверяются по таблице `users`, пароль хранится как SHA-256, сессия в `SharedPreferences` | `SELECT ... WHERE username = ? AND pass = ?` |
 | 🏨 | **Шахматка отеля**: этажи и номера плитками, занятые подсвечены, нажатие открывает номер, плитки вне результата поиска гаснут | `SELECT DISTINCT room_id FROM bookings` |
 | 🔍 | **Три режима поиска** — по категории, по этажу + максимальной цене, «дешевле средней цены»; на экране виден реальный SQL-запрос | `query()` с параметризованным `WHERE`, подзапрос `AVG(price)` |
 | ↕️ | **Четыре варианта сортировки** списка | динамический `ORDER BY` |
 | ➕ | **Добавление номера** с семью проверками ввода | `INSERT` через `ContentValues`, `UNIQUE` на номере |
 | ✏️ | **Изменение цены и числа мест** | `UPDATE ... WHERE _id = ?` |
 | 🗑️ | **Удаление номера** вместе с его бронями, групповое удаление по году ремонта | каскад `DELETE` в правильном порядке |
-| 🛏️ | **Бронирование** с живым расчётом стоимости прямо в диалоге | `cost = nights × price` |
+| 🛏️ | **Бронирование** с живым расчётом стоимости: DatePicker, TimePicker, SeekBar, CheckBox, ToggleButton, RadioButton | `cost = nights × price` |
+| 🧊 | **3D-шахматка**: здание из кубов, вращается и крутится пальцем | OpenGL ES 2.0 |
+| 📁 | **Отчёт в файл** `hotel_report.csv` и чтение из приложения | `FileOutputStream`, `BufferedReader` |
 | 📊 | **Экран статистики** — загрузка, средняя/мин/макс цена, срез по категориям, выручка по номерам | `COUNT / AVG / MIN / MAX / SUM`, `GROUP BY … HAVING`, `LEFT JOIN` |
 | 🪵 | **Отладка через LogCat** — свой TAG в каждом классе | `Log.i / Log.w / Log.e` |
 
 ---
 
+## Вход и роли
+
+При первом запуске открывается экран входа. Демо-аккаунты:
+
+| Логин | Пароль | Роль | Что доступно |
+|---|---|---|---|
+| `admin` | `admin123` | админ | всё: номера, брони, статистика, файл, сброс базы |
+| `client` | `client123` | клиент | просмотр и поиск номеров, свои брони (смотреть и отменять), 3D |
+
+Новый клиент создаётся кнопкой «Тіркелу». Рабочие данные и роли живут в базе, поэтому после обновления с версии 1 база мигрирует без потери данных (`onUpgrade`: добавляются колонки и таблица `users`).
+
+---
+
+## Соответствие силабусу МКР 3311
+
+| Неделя | Тема | Где в проекте |
+|:---:|---|---|
+| 1 | Структура Android, эмулятор | проект Android Studio, проверка на AVD |
+| 2 | Архитектура приложения | три слоя: модели, `DbHelper`, интерфейс |
+| 3 | Жизненный цикл Activity, TextView, EditText, Button | `onCreate/onStart/onPause/onStop/onDestroy` пишутся в LogCat |
+| 4 | Toast, CheckBox, ToggleButton, RadioButton, DatePicker, TimePicker, SeekBar | диалог брони (`RoomActivity`) |
+| 5 | Адаптеры и списки | `RoomAdapter`, `BookingAdapter`, три `ListView` |
+| 6 | Меню и подменю | `main_menu.xml`, подменю «Деректер», меню зависит от роли |
+| 7 | Manifest, Intent, передача данных, сериализация | `Room`, `Booking`, `User` реализуют `Serializable`; `Room` передаётся через `Intent` |
+| 8 | Диалоги | `AlertDialog`, `DatePickerDialog`, `TimePickerDialog` |
+| 9 | Фрагменты и их жизненный цикл | статистика: `StatsOverviewFragment`, `StatsCategoriesFragment`, `StatsRevenueFragment` |
+| 10 | SQLite: подключение, сохранение | `rooms`, `bookings`, `users` |
+| 11 | update, delete, query, фильтр, сортировка, группировка | `DbHelper`, `GROUP BY`, `JOIN`, подзапрос |
+| 12 | Мультимедиа и анимация | `ObjectAnimator`, `ValueAnimator`, анимация списка, звук `ToneGenerator`; видео в проекте нет |
+| 13 | Работа с файлами | `hotel_report.csv`, `SharedPreferences` |
+| 14 | 2D-графика | `StripChartView` на `Canvas` |
+| 15 | 3D-графика | `Hotel3DActivity`, `Hotel3DRenderer` (OpenGL ES 2.0) |
+
+Из тем самостоятельной работы силабуса (БӨЖ: сервисы, `BroadcastReceiver`, `ContentProvider`) в приложении ничего не реализовано, как и видео из недели 12.
+
+---
+
 ## Схема базы данных
 
-База `hotel.db` (версия 1) состоит из двух таблиц, связанных как «один ко многим»: у одного номера может быть много броней.
+База `hotel.db` (версия 2) состоит из трёх таблиц: `rooms`, `bookings` (связаны как «один ко многим») и `users`. Ниже схема основных двух.
 
 ```mermaid
 erDiagram
@@ -119,18 +159,21 @@ GROUP BY r._id ORDER BY SUM(b.cost) DESC;
 ```
 Hotel/app/src/main/
 ├── java/com/example/hotel/
-│   ├── Room.java              модель номера
-│   ├── Booking.java           модель брони
-│   ├── DbHelper.java          SQLite: две таблицы, все запросы
-│   ├── RoomAdapter.java       адаптер списка номеров
-│   ├── BookingAdapter.java    адаптер списка броней
-│   ├── MainActivity.java      список + поиск + сортировка
-│   ├── RoomActivity.java      карточка номера и его брони
-│   ├── AddRoomActivity.java   добавление номера + валидация
-│   ├── StatsActivity.java     статистика: GROUP BY, JOIN
-│   ├── StripChartView.java    диаграмма категорий: полоски-образцы на Canvas
-│   └── Ui.java                отступы под системные панели, анимации
-└── res/layout/                13 макетов на виджетах Material 3
+│   ├── Room, Booking, User       модели (Serializable)
+│   ├── DbHelper.java             SQLite: 3 таблицы, все запросы, миграция v1 в v2
+│   ├── Session.java              сессия на SharedPreferences
+│   ├── LoginActivity.java        вход, регистрация, роли
+│   ├── MainActivity.java         шахматка, поиск, сортировка, меню по роли
+│   ├── RoomActivity.java         номер, брони, диалог брони
+│   ├── AddRoomActivity.java      добавление номера + валидация
+│   ├── MyBookingsActivity.java   брони клиента
+│   ├── StatsActivity.java        вкладки статистики
+│   ├── Stats*Fragment.java       3 фрагмента статистики
+│   ├── Hotel3DActivity.java      3D-шахматка (OpenGL ES 2.0)
+│   ├── Hotel3DRenderer.java      шейдеры и куб
+│   ├── RoomAdapter, BookingAdapter   адаптеры ListView
+│   └── StripChartView, StatsViews, Ui  2D-диаграмма, общие помощники
+└── res/layout/                   19 макетов на виджетах Material 3
 ```
 
 Архитектура — три слоя: модели, слой данных (`DbHelper`) и UI. Ни один `Activity` не пишет SQL — все обращения идут через методы `DbHelper`.

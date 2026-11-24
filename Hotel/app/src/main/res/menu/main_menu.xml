@@ -9,17 +9,41 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_add"
-        android:title="Нөмір қосу"
+        android:id="@+id/action_3d"
+        android:title="3D шахматка"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_delete_old"
-        android:title="Ескі нөмірлерді жою"
+        android:id="@+id/action_mybookings"
+        android:title="Менің брондауларым"
         app:showAsAction="never" />
 
+    <!-- Ішкі мәзір (submenu): әкімшіге арналған деректер операциялары -->
     <item
-        android:id="@+id/action_reset"
-        android:title="Бастапқы мәліметтер"
+        android:id="@+id/action_data"
+        android:title="Деректер"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_add"
+                android:title="Нөмір қосу" />
+            <item
+                android:id="@+id/action_delete_old"
+                android:title="Ескі нөмірлерді жою" />
+            <item
+                android:id="@+id/action_export"
+                android:title="Есепті файлға сақтау" />
+            <item
+                android:id="@+id/action_import"
+                android:title="Есепті файлдан ашу" />
+            <item
+                android:id="@+id/action_reset"
+                android:title="Бастапқы мәліметтер" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Шығу"
         app:showAsAction="never" />
 </menu>

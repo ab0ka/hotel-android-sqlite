@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen"
+    android:orientation="vertical">
+
+    <include layout="@layout/appbar" />
+
+    <TextView
+        style="@style/Text.Hotel.Display"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:text="3D шахматка"
+        android:textSize="40sp" />
+
+    <TextView
+        android:id="@+id/txt3dInfo"
+        style="@style/Text.Hotel.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="10dp" />
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/glView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        style="@style/Text.Hotel.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Көк куб: брондалған нөмір. Сұр куб: бос нөмір. Саусақпен бұру, екі рет басу: айналуды қосу немесе тоқтату." />
+</LinearLayout>
