@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05070F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Қонақүй">
+<title>Қонақүй</title>
+<meta name="description" content="Қонақүй нөмірлері мен брондауларын есепке алу. Веб-нұсқа: SQLite браузерде жұмыс істейді.">
+<style>
+:root {
+  --bg: #05070F; --ink: #FFFFFF; --ink-2: #FFFFFFD1; --muted: #FFFFFF99; --rule: #FFFFFF1F;
+  --glass: #FFFFFF1F; --glass-2: #FFFFFF14; --edge: #FFFFFF33; --sheet: #1B2234;
+  --accent: #0A84FF; --accent-2: #64D2FF; --warm: #FFB340; --warn: #FF9A91;
+  --stain-neutral: #8E8E93; --stain-1: #FF6B8A; --stain-2: #30D158; --stain-3: #FFB340; --stain-4: #64D2FF;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.4; overflow-x: clip; }
+body { min-height: 100dvh; background:
+  radial-gradient(520px 520px at 5% 0%, #0A84FF66, transparent 70%),
+  radial-gradient(420px 420px at 100% 38%, #64D2FF33, transparent 70%),
+  radial-gradient(480px 480px at 10% 100%, #FFB34033, transparent 70%), var(--bg); background-attachment: fixed; }
+#app { max-width: 560px; margin: 0 auto; padding: calc(var(--safe-t) + 8px) 16px calc(var(--safe-b) + 96px); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+
+.bar { display: flex; align-items: center; justify-content: space-between; min-height: 52px; }
+.bar h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.icon { display: inline-grid; place-items: center; vertical-align: middle; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--glass-2); color: var(--ink); font-size: 20px; }
+.icon:active { background: var(--glass); }
+.big { margin: 20px 0 8px; font-size: clamp(2.6rem, 13vw, 4.2rem); line-height: 1.04; font-weight: 700; letter-spacing: -0.035em; text-wrap: balance; }
+.h2 { margin: 36px 0 12px; font-size: clamp(2rem, 9.5vw, 2.8rem); line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
+.cap { color: var(--muted); font-size: 14px; }
+.glass { background: var(--glass-2); border: 1px solid var(--edge); border-radius: 24px; -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%); }
+.stack { display: grid; gap: 10px; }
+
+.board { display: grid; grid-template-columns: 56px repeat(4, minmax(0, 1fr)); gap: 8px; align-items: center; margin: 14px 0 6px; }
+.board .fl { color: var(--muted); font-size: 13px; }
+.tile { display: grid; place-items: center; height: 56px; border-radius: 18px; border: 1px solid var(--edge); background: var(--glass-2); font-size: 18px; font-weight: 700; transition: opacity 0.3s, transform 0.15s; }
+.tile.on { background: var(--accent); border-color: var(--accent); }
+.tile.dim { opacity: 0.2; }
+.tile:active { transform: scale(0.94); }
+
+.rows { padding: 4px 0; }
+.rows > div { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 20px; border-top: 1px solid var(--rule); }
+.rows > div:first-child { border-top: 0; }
+.rows b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rows span { color: var(--ink-2); font-size: 16px; }
+
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--rule); margin-bottom: 12px; }
+.tabs button { background: none; border: 0; padding: 14px 4px; color: var(--muted); font-weight: 500; font-size: 15px; border-bottom: 3px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.field { display: grid; gap: 6px; margin: 10px 0; }
+.field label { color: var(--muted); font-size: 13px; }
+input, select { width: 100%; min-height: 52px; padding: 0 16px; font-size: 16px; border-radius: 16px; border: 1px solid var(--edge); background: var(--glass-2); }
+select option { color: #000; }
+input:focus { border-color: var(--accent-2); outline: 0; box-shadow: 0 0 0 2px var(--accent-2); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn { min-height: 56px; border: 0; border-radius: 999px; padding: 0 28px; background: var(--accent); color: #fff; font-weight: 700; font-size: 17px; transition: background 0.2s, transform 0.15s; }
+.btn:active { transform: scale(0.97); background: #409CFF; }
+.btn.ghost { background: var(--glass-2); border: 1px solid var(--edge); }
+.btn.danger { background: var(--glass-2); border: 1px solid var(--edge); color: var(--warn); }
+.btnrow { display: flex; gap: 10px; margin: 14px 0; }
+.btnrow .btn { flex: 1; }
+.sql { margin: 12px 0 4px; padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.room { display: grid; grid-template-columns: 76px 1fr auto; gap: 12px; align-items: center; width: 100%; padding: 14px 18px; text-align: left; border-radius: 24px; background: var(--glass-2); border: 1px solid var(--edge); }
+.room:active { background: var(--glass); }
+.room .n { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; }
+.room .c { font-weight: 600; font-size: 17px; }
+.room .p { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.room .s { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
+.room .s.b { color: var(--accent-2); }
+
+.hero-n { margin: 22px 0 0; font-size: clamp(4.5rem, 26vw, 7.5rem); line-height: 0.95; font-weight: 700; letter-spacing: -0.05em; }
+.price { margin: 12px 0 0; font-size: clamp(2rem, 11vw, 3rem); font-weight: 700; letter-spacing: -0.03em; }
+.spec { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 16px 18px; margin: 16px 0; }
+.spec b { display: block; font-size: 22px; font-weight: 700; }
+.bk { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--rule); }
+.bk:first-child { border-top: 0; }
+.bk b { font-size: 18px; }
+.empty { padding: 20px; color: var(--ink-2); }
+
+.seg { padding: 16px 0 14px; border-top: 1px solid var(--rule); }
+.seg:first-child { border-top: 0; }
+.seg .t { display: flex; justify-content: space-between; font-size: 19px; font-weight: 600; }
+.seg .bar2 { height: 3px; margin: 8px 0 6px; border-radius: 2px; background: var(--rule); overflow: hidden; }
+.seg .bar2 i { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: grow 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes grow { from { transform: scaleX(0); } }
+.revenue { margin: 18px 0 6px; font-size: clamp(2.8rem, 15vw, 4.4rem); line-height: 1; font-weight: 700; letter-spacing: -0.04em; color: var(--accent-2); font-variant-numeric: tabular-nums; }
+.strips { width: 100%; height: auto; display: block; margin: 8px 0; }
+
+.fab { position: fixed; left: 50%; bottom: calc(var(--safe-b) + 14px); translate: -50% 0; width: min(528px, calc(100% - 32px)); z-index: 5; box-shadow: 0 14px 40px -12px #000C; }
+.scrim { position: fixed; inset: 0; z-index: 20; background: #000000A6; display: grid; align-items: end; justify-items: center; animation: fade 0.2s both; }
+@keyframes fade { from { opacity: 0; } }
+.sheet { width: min(560px, 100%); max-height: 92dvh; overflow: auto; padding: 22px 20px calc(var(--safe-b) + 22px); border-radius: 28px 28px 0 0; background: var(--sheet); border: 1px solid var(--edge); animation: up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes up { from { transform: translateY(40px); opacity: 0; } }
+.sheet h3 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.02em; }
+.cost { margin: 12px 0 4px; padding: 14px 16px; border-radius: 16px; background: var(--glass-2); border: 1px solid var(--edge); font-size: 19px; font-weight: 700; }
+.menu button { display: block; width: 100%; padding: 18px 8px; text-align: left; background: none; border: 0; border-top: 1px solid var(--rule); font-size: 18px; }
+.menu button:first-child { border-top: 0; }
+.toast { position: fixed; left: 50%; top: calc(var(--safe-t) + 12px); translate: -50% 0; z-index: 30; padding: 12px 20px; border-radius: 999px; background: var(--sheet); border: 1px solid var(--edge); font-weight: 600; font-size: 15px; animation: fade 0.2s both; max-width: calc(100% - 32px); text-align: center; }
+.load { min-height: 70dvh; display: grid; place-items: center; text-align: center; color: var(--ink-2); padding: 24px; }
+.in { animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<div id="app"><div class="load"><div><div class="big" style="font-size:2.4rem">Қонақүй</div><p>SQLite жүктелуде…</p></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+'use strict';
+/* ====== Деректер қабаты: SQLite браузерде (sql.js). Android-тағы DbHelper-дің баламасы ====== */
+const KEY = 'hotel.db.v1';
+const CATEGORIES = ['Стандарт', 'Жартылай люкс', 'Люкс', 'Отбасылық', 'Бизнес'];
+const SORT_NAMES = ['Нөмірі бойынша', 'Бағасы (өсуі бойынша)', 'Бағасы (кемуі бойынша)', 'Санаты бойынша'];
+const SORT_SQL = ['number ASC', 'price ASC', 'price DESC', 'category ASC, number ASC'];
+const STAIN = { 'Стандарт': 'var(--stain-neutral)', 'Жартылай люкс': 'var(--stain-4)', 'Люкс': 'var(--stain-3)', 'Отбасылық': 'var(--stain-1)', 'Бизнес': 'var(--stain-2)' };
+let db, sortIdx = 0;
+
+const ROOMS = [
+  ['101','Стандарт',1,1,18000,18,2021],['102','Стандарт',1,2,24000,22,2021],['103','Стандарт',1,2,24000,22,2018],
+  ['104','Бизнес',1,1,32000,26,2023],['201','Стандарт',2,2,25000,23,2022],['202','Жартылай люкс',2,2,38000,32,2023],
+  ['203','Жартылай люкс',2,2,38000,30,2019],['204','Отбасылық',2,4,52000,44,2024],['301','Бизнес',3,2,41000,34,2024],
+  ['302','Люкс',3,2,65000,48,2025],['303','Люкс',3,3,78000,56,2025],['304','Отбасылық',3,4,56000,46,2020],
+  ['401','Люкс',4,2,72000,52,2024],['402','Бизнес',4,1,35000,28,2017],['403','Стандарт',4,2,23000,21,2016],['404','Отбасылық',4,5,64000,58,2022]];
+const BOOKINGS = [
+  [1,'Ахметов Д.',2,1,36000,'2026-11-02'],[2,'Сәрсенова А.',3,2,72000,'2026-11-03'],[4,'Жұмабек Н.',1,1,32000,'2026-11-03'],
+  [6,'Кім С.',4,2,152000,'2026-11-04'],[8,'Оспанов Е.',5,4,260000,'2026-11-05'],[10,'Нұрлан Б.',2,2,130000,'2026-11-05'],
+  [11,'Иванов П.',3,3,234000,'2026-11-06'],[12,'Сәкен Ж.',2,4,112000,'2026-11-07'],[13,'Әлиев Р.',1,2,72000,'2026-11-08'],
+  [5,'Тоқтар М.',2,2,50000,'2026-11-09'],[9,'Бейсенова Г.',3,2,123000,'2026-11-10'],[16,'Serikov A.',4,5,256000,'2026-11-11']];
+
+function createSchema() {
+  db.run(`CREATE TABLE rooms (_id INTEGER PRIMARY KEY AUTOINCREMENT, number TEXT NOT NULL UNIQUE, category TEXT NOT NULL,
+    floor INTEGER NOT NULL, beds INTEGER NOT NULL, price INTEGER NOT NULL, area INTEGER NOT NULL, year_repair INTEGER NOT NULL)`);
+  db.run(`CREATE TABLE bookings (_id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, guest TEXT NOT NULL,
+    nights INTEGER NOT NULL, persons INTEGER NOT NULL, cost INTEGER NOT NULL, date TEXT NOT NULL,
+    FOREIGN KEY(room_id) REFERENCES rooms(_id))`);
+}
+function seed() {
+  ROOMS.forEach(r => db.run('INSERT INTO rooms (number,category,floor,beds,price,area,year_repair) VALUES (?,?,?,?,?,?,?)', r));
+  BOOKINGS.forEach(b => db.run('INSERT INTO bookings (room_id,guest,nights,persons,cost,date) VALUES (?,?,?,?,?,?)', b));
+}
+const toB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const fromB64 = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+function save() { try { localStorage.setItem(KEY, toB64(db.export())); } catch (e) { /* жад толса, сессия ішінде жұмыс істей береді */ } }
+function q(sql, params = []) { const st = db.prepare(sql); st.bind(params); const out = []; while (st.step()) out.push(st.getAsObject()); st.free(); return out; }
+const one = (sql, p) => { const r = q(sql, p)[0]; return r ? Object.values(r)[0] : 0; };
+function run(sql, p = []) { db.run(sql, p); save(); }
+const lit = (sql, p) => { let i = 0; return sql.replace(/\?/g, () => { const v = p[i++]; return typeof v === 'number' ? v : "'" + v + "'"; }); };
+
+const order = () => 'ORDER BY ' + SORT_SQL[sortIdx];
+function roomsWhere(where, params) {
+  const sql = 'SELECT * FROM rooms' + (where ? ' WHERE ' + where : '') + ' ' + order();
+  return { list: q(sql, params), sql: lit(sql, params).replace(' WHERE', '\nWHERE').replace(' ORDER', '\nORDER') };
+}
+const avgPrice = () => Math.trunc(one('SELECT IFNULL(AVG(price),0) FROM rooms'));
+const bookedIds = () => new Set(q('SELECT DISTINCT room_id FROM bookings').map(r => r.room_id));
+const allRooms = () => q('SELECT * FROM rooms ORDER BY number ASC');
+const roomById = id => q('SELECT * FROM rooms WHERE _id = ?', [id])[0];
+const bookingsOf = id => q('SELECT * FROM bookings WHERE room_id = ? ORDER BY date DESC, _id DESC', [id]);
+
+/* ====== Көмекшілер ====== */
+const $ = s => document.querySelector(s);
+const money = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function toast(t) { const e = document.createElement('div'); e.className = 'toast'; e.textContent = t; e.setAttribute('role', 'status'); document.body.appendChild(e); setTimeout(() => e.remove(), 2600); }
+function countUp(el, to, fmt = money) {
+  if (reduce || to <= 0) { el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  (function step(t) { const p = Math.min(1, (t - t0) / 800); el.textContent = fmt(Math.round(to * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(step); })(t0);
+}
+function sheet(html, onMount) {
+  const s = document.createElement('div'); s.className = 'scrim';
+  s.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">' + html + '</div>';
+  s.addEventListener('click', e => { if (e.target === s) s.remove(); });
+  document.body.appendChild(s); onMount && onMount(s); return s;
+}
+
+/* ====== Экрандар ====== */
+const app = $('#app');
+const st = { mode: 0, category: CATEGORIES[0], floor: '', price: '', applied: { mode: 0 } };
+
+function route() {
+  const h = location.hash || '#/';
+  window.scrollTo(0, 0);
+  if (h.startsWith('#/room/')) viewRoom(+h.slice(7));
+  else if (h === '#/stats') viewStats();
+  else if (h === '#/add') viewAdd();
+  else viewMain();
+}
+const go = h => { location.hash = h; };
+
+function currentQuery() {
+  const a = st.applied;
+  if (a.mode === 1) return roomsWhere('category = ?', [a.category]);
+  if (a.mode === 2) return roomsWhere('floor = ? AND price <= ?', [a.floor, a.price]);
+  if (a.mode === 3) { const r = roomsWhere('price < (SELECT AVG(price) FROM rooms)', []); r.avg = avgPrice(); return r; }
+  return roomsWhere('', []);
+}
+function resultTitle(r) {
+  const a = st.applied, n = r.list.length;
+  if (a.mode === 1) return `а) «${a.category}»: ${n} нөмір`;
+  if (a.mode === 2) return `ә) ${a.floor}-қабат, ≤ ${money(a.price)} тг: ${n} нөмір`;
+  if (a.mode === 3) return `б) орташа баға ${money(r.avg)} тг, одан арзан: ${n} нөмір`;
+  return `Барлығы: ${n} нөмір, ${SORT_NAMES[sortIdx].toLowerCase()}`;
+}
+
+function viewMain() {
+  const r = currentQuery(), booked = bookedIds(), shown = new Set(r.list.map(x => x._id));
+  const total = one('SELECT COUNT(*) FROM rooms'), nb = one('SELECT COUNT(*) FROM bookings'), busy = one('SELECT COUNT(DISTINCT room_id) FROM bookings');
+  const load = total ? Math.round(busy * 100 / total) : 0;
+  const floors = [...new Set(allRooms().map(x => x.floor))].sort((a, b) => b - a);
+  const board = floors.map(f => `<span class="fl">${f}-қабат</span>` + allRooms().filter(x => x.floor === f).slice(0, 4).map(x =>
+    `<button class="tile ${booked.has(x._id) ? 'on' : ''} ${shown.has(x._id) ? '' : 'dim'}" data-room="${x._id}" aria-label="Нөмір ${esc(x.number)}, ${booked.has(x._id) ? 'брондалған' : 'бос'}">${esc(x.number)}</button>`).join('')).join('');
+  const m = st.mode;
+  app.innerHTML = `
+  <div class="bar"><h1>Қонақүй</h1><span><button class="icon" id="bStats" aria-label="Статистика">▥</button> <button class="icon" id="bMenu" aria-label="Мәзір">⋯</button></span></div>
+  <div class="in">
+  <p class="big">${total} нөмір, ${nb} брондау.</p>
+  <div class="board" role="group" aria-label="Қонақүй шахматкасы">${board}</div>
+  <p class="cap">Толтырылған плитка: брондалған нөмір. Контур: бос нөмір. Басу: нөмірді ашу.</p>
+  <div class="glass rows" style="margin-top:16px">
+    <div><span>Орташа баға, тг</span><b>${money(avgPrice())}</b></div>
+    <div><span>Брондалған нөмір</span><b>${busy} / ${total}, ${load} %</b></div>
+    <div><span>Табыс, тг</span><b id="rev">${money(one('SELECT IFNULL(SUM(cost),0) FROM bookings'))}</b></div>
+  </div>
+  <h2 class="h2">Іздеу</h2>
+  <div class="tabs" role="tablist">
+    ${['Санат', 'Қабат пен баға', 'Орташадан арзан'].map((t, i) => `<button role="tab" aria-selected="${m === i + 1 || (m === 0 && i === 0)}" data-tab="${i}">${t}</button>`).join('')}
+  </div>
+  <p class="cap" id="hint"></p>
+  <div id="inputs"></div>
+  <div class="btnrow"><button class="btn" id="bFind">Іздеу</button><button class="btn ghost" id="bAll">Барлығы</button></div>
+  <div class="field"><label for="sort">Сұрыптау</label><select id="sort">${SORT_NAMES.map((s, i) => `<option value="${i}" ${i === sortIdx ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+  <h2 class="h2" style="font-size:clamp(1.5rem,7vw,2rem)">${esc(resultTitle(r))}</h2>
+  <div class="glass sql" aria-label="SQL сұранысы">${esc(r.sql)}</div>
+  <p class="cap" style="margin:8px 0 14px">Басу: нөмір туралы толық мәлімет және брондаулар.</p>
+  <div class="stack">${r.list.length ? r.list.map(x => `<button class="room" data-room="${x._id}"><span class="n">${esc(x.number)}</span><span><span class="c">${esc(x.category)}</span><span class="s">${x.floor}-қабат, ${x.beds} төсек, ${x.area} м²</span></span><span class="p">${money(x.price)} тг<span class="s ${booked.has(x._id) ? 'b' : ''}">${booked.has(x._id) ? 'брондалған' : 'бос'}</span></span></button>`).join('') : '<div class="glass empty">Сұранысқа сәйкес нөмір табылмады.</div>'}</div>
+  </div>
+  <button class="btn fab" id="bAdd">Нөмір қосу</button>`;
+  countUp($('#rev'), one('SELECT IFNULL(SUM(cost),0) FROM bookings'));
+  drawInputs();
+  app.querySelectorAll('[data-room]').forEach(b => b.onclick = () => go('#/room/' + b.dataset.room));
+  app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { st.mode = +b.dataset.tab + 1; if (st.mode === 3) { st.applied = { mode: 3 }; } viewMain(); });
+  $('#bStats').onclick = () => go('#/stats'); $('#bAdd').onclick = () => go('#/add'); $('#bMenu').onclick = openMenu;
+  $('#bAll').onclick = () => { st.mode = 0; st.applied = { mode: 0 }; viewMain(); };
+  $('#sort').onchange = e => { sortIdx = +e.target.value; viewMain(); };
+  $('#bFind').onclick = find;
+}
+function drawInputs() {
+  const m = st.mode || 1, box = $('#inputs'), hint = $('#hint');
+  if (m === 1) {
+    hint.textContent = 'а) Тізімнен нөмір санатын таңдаңыз';
+    box.innerHTML = `<div class="field"><select id="cat" aria-label="Санат">${CATEGORIES.map(c => `<option ${c === st.category ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+    $('#cat').onchange = e => { st.category = e.target.value; };
+  } else if (m === 2) {
+    hint.textContent = 'ә) Қабатты және ең жоғары бағаны жазыңыз';
+    box.innerHTML = `<div class="two"><div class="field"><label for="fl">Қабаты</label><input id="fl" inputmode="numeric" value="${esc(st.floor)}"></div><div class="field"><label for="pr">Бағасы дейін, тг</label><input id="pr" inputmode="numeric" value="${esc(st.price)}"></div></div>`;
+  } else { hint.textContent = 'б) Бағасы қонақүй бойынша орташадан арзан нөмірлер'; box.innerHTML = ''; }
+}
+function find() {
+  const m = st.mode || 1;
+  if (m === 1) { st.applied = { mode: 1, category: st.category }; }
+  else if (m === 2) {
+    const f = $('#fl').value.trim(), p = $('#pr').value.trim();
+    if (!f || !p) return toast('Қабат пен бағаны жазыңыз');
+    if (!/^\d+$/.test(f) || !/^\d+$/.test(p)) return toast('Қабат пен бағаны сан түрінде жазыңыз');
+    st.floor = f; st.price = p; st.applied = { mode: 2, floor: +f, price: +p };
+  } else st.applied = { mode: 3 };
+  viewMain();
+}
+function openMenu() {
+  const s = sheet(`<h3>Мәзір</h3><div class="menu"><button data-a="add">Нөмір қосу</button><button data-a="old">Ескі нөмірлерді жою</button><button data-a="reset">Бастапқы мәліметтер</button></div>`);
+  s.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { s.remove(); ({ add: () => go('#/add'), old: deleteOld, reset: resetData })[b.dataset.a](); });
+}
+function deleteOld() {
+  const s = sheet(`<h3>Ескі нөмірлерді жою</h3><p class="cap">Жөндеу жылы көрсетілген жылдан ескі нөмірлер және олардың брондаулары жойылады.</p>
+    <div class="field"><label for="yr">Жыл, мысалы 2020</label><input id="yr" inputmode="numeric"></div>
+    <div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn danger" id="yes">Жою</button></div>`);
+  s.querySelector('#no').onclick = () => s.remove();
+  s.querySelector('#yes').onclick = () => {
+    const y = s.querySelector('#yr').value.trim(); if (!/^\d{4}$/.test(y)) return toast('Жылды сан түрінде жазыңыз');
+    run('DELETE FROM bookings WHERE room_id IN (SELECT _id FROM rooms WHERE year_repair < ?)', [+y]);
+    const n = one('SELECT COUNT(*) FROM rooms WHERE year_repair < ?', [+y]);
+    run('DELETE FROM rooms WHERE year_repair < ?', [+y]); s.remove(); toast(n + ' нөмір жойылды'); route();
+  };
+}
+function resetData() {
+  const s = sheet(`<h3>Бастапқы мәліметтер</h3><p class="cap">База бастапқы 16 нөмір және 12 брондау күйіне келтіріледі. Жалғастырамыз ба?</p>
+    <div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn" id="yes">Келтіру</button></div>`);
+  s.querySelector('#no').onclick = () => s.remove();
+  s.querySelector('#yes').onclick = () => { db.run('DROP TABLE IF EXISTS bookings'); db.run('DROP TABLE IF EXISTS rooms'); createSchema(); seed(); save(); st.mode = 0; st.applied = { mode: 0 }; s.remove(); toast('База қалпына келтірілді'); route(); };
+}
+
+function viewRoom(id) {
+  const r = roomById(id);
+  if (!r) { toast('Нөмір табылмады'); return go('#/'); }
+  const bs = bookingsOf(id), nights = bs.reduce((a, b) => a + b.nights, 0), sum = bs.reduce((a, b) => a + b.cost, 0);
+  app.innerHTML = `
+  <div class="bar"><button class="icon" id="back" aria-label="Артқа">‹</button><h1>Нөмір туралы</h1><span style="width:44px"></span></div>
+  <div class="in">
+  <p class="hero-n">№${esc(r.number)}</p>
+  <p style="margin:6px 0 0;font-size:22px;font-weight:600">${esc(r.category)}</p>
+  <p class="price">${money(r.price)} тг</p>
+  <p class="cap">тәулігіне, бір төсекке ${money(Math.trunc(r.price / r.beds))} тг</p>
+  <div class="glass spec"><div><b>${r.floor}</b><span class="cap">қабат</span></div><div><b>${r.beds}</b><span class="cap">төсек</span></div><div><b>${r.area} м²</b><span class="cap">ауданы</span></div><div><b>${r.year_repair}</b><span class="cap">жөндеу</span></div></div>
+  <button class="btn" id="book" style="width:100%">Брондау қосу</button>
+  <div class="btnrow"><button class="btn ghost" id="edit">Бағаны өзгерту</button><button class="btn danger" id="del">Нөмірді жою</button></div>
+  <h2 class="h2">Брондаулар</h2>
+  <p class="cap" style="margin:-6px 0 12px">${bs.length} брондау, ${nights} тәулік, барлығы ${money(sum)} тг</p>
+  <div class="glass">${bs.length ? bs.map(b => `<div class="bk"><span><b>${esc(b.guest)}</b><br><span class="cap">${esc(b.date)}, ${b.nights} тәулік, ${b.persons} адам</span></span><span><b>${money(b.cost)} тг</b><br><button class="icon" style="width:36px;height:36px;font-size:16px;margin-top:4px" data-del="${b._id}" aria-label="Брондауды жою">✕</button></span></div>`).join('') : '<div class="empty">Брондаулар әлі жоқ.</div>'}</div>
+  </div>`;
+  $('#back').onclick = () => history.length > 1 ? history.back() : go('#/');
+  $('#book').onclick = () => bookDialog(r);
+  $('#edit').onclick = () => editDialog(r);
+  $('#del').onclick = () => confirmDelete(r);
+  app.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const s = sheet(`<h3>Брондауды жою</h3><p class="cap">Брондау жойылады. Жалғастырамыз ба?</p><div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn danger" id="yes">Жою</button></div>`);
+    s.querySelector('#no').onclick = () => s.remove();
+    s.querySelector('#yes').onclick = () => { run('DELETE FROM bookings WHERE _id = ?', [+b.dataset.del]); s.remove(); toast('Брондау жойылды'); route(); };
+  });
+}
+function bookDialog(r) {
+  const s = sheet(`<h3>Брондау қосу</h3><p class="cap">Нөмір ${esc(r.number)}, ${money(r.price)} тг тәулігіне, төсек: ${r.beds}</p>
+    <div class="field"><label for="g">Қонақтың аты-жөні</label><input id="g" autocomplete="off"></div>
+    <div class="two"><div class="field"><label for="n">Тәулік, 1 мен 30</label><input id="n" inputmode="numeric"></div><div class="field"><label for="p">Адам саны</label><input id="p" inputmode="numeric"></div></div>
+    <div class="cost" id="cost">Құны: 0 тг</div>
+    <div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn" id="yes">Қосу</button></div>`);
+  const upd = () => { const n = parseInt(s.querySelector('#n').value, 10) || 0; s.querySelector('#cost').textContent = `Құны: ${n} × ${money(r.price)} = ${money(n * r.price)} тг`; };
+  s.querySelector('#n').oninput = upd;
+  s.querySelector('#no').onclick = () => s.remove();
+  s.querySelector('#yes').onclick = () => {
+    const g = s.querySelector('#g').value.trim(), n = s.querySelector('#n').value.trim(), p = s.querySelector('#p').value.trim();
+    if (!g) return toast('Қонақтың аты-жөнін жазыңыз');
+    if (!/^\d+$/.test(n) || !/^\d+$/.test(p)) return toast('Тәулік пен адам санын сан түрінде жазыңыз');
+    if (+n < 1 || +n > 30) return toast('Тәулік саны 1-30 аралығында болуы керек');
+    if (+p < 1 || +p > r.beds) return toast(`Адам саны төсек санынан аспауы керек (${r.beds})`);
+    const d = new Date(), date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    run('INSERT INTO bookings (room_id,guest,nights,persons,cost,date) VALUES (?,?,?,?,?,?)', [r._id, g, +n, +p, +n * r.price, date]);
+    s.remove(); toast('Брондау қосылды, құны ' + money(+n * r.price) + ' тг'); route();
+  };
+}
+function editDialog(r) {
+  const s = sheet(`<h3>Өзгерту: №${esc(r.number)}</h3>
+    <div class="field"><label for="pr">Бағасы, тг тәулігіне</label><input id="pr" inputmode="numeric" value="${r.price}"></div>
+    <div class="field"><label for="bd">Төсек саны</label><input id="bd" inputmode="numeric" value="${r.beds}"></div>
+    <p class="cap">UPDATE rooms SET price = ?, beds = ? WHERE _id = ?</p>
+    <div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn" id="yes">Сақтау</button></div>`);
+  s.querySelector('#no').onclick = () => s.remove();
+  s.querySelector('#yes').onclick = () => {
+    const p = s.querySelector('#pr').value.trim(), b = s.querySelector('#bd').value.trim();
+    if (!/^\d+$/.test(p) || !/^\d+$/.test(b)) return toast('Сандарды дұрыс жазыңыз');
+    if (+p <= 0 || +b <= 0) return toast('Мәндер нөлден үлкен болуы керек');
+    run('UPDATE rooms SET price = ?, beds = ? WHERE _id = ?', [+p, +b, r._id]); s.remove(); toast('1 жол жаңартылды'); route();
+  };
+}
+function confirmDelete(r) {
+  const s = sheet(`<h3>Жою</h3><p class="cap">№${esc(r.number)} нөмірі және оның барлық брондаулары жойылады. Жалғастырамыз ба?</p><div class="btnrow"><button class="btn ghost" id="no">Болдырмау</button><button class="btn danger" id="yes">Жою</button></div>`);
+  s.querySelector('#no').onclick = () => s.remove();
+  s.querySelector('#yes').onclick = () => { run('DELETE FROM bookings WHERE room_id = ?', [r._id]); run('DELETE FROM rooms WHERE _id = ?', [r._id]); s.remove(); toast('1 нөмір жойылды'); go('#/'); };
+}
+
+function viewAdd() {
+  app.innerHTML = `
+  <div class="bar"><button class="icon" id="back" aria-label="Артқа">‹</button><h1>Нөмір қосу</h1><span style="width:44px"></span></div>
+  <div class="in">
+  <p class="big">Жаңа жазба</p>
+  <p class="cap">Нөмір бірегей болуы керек. Мәліметтер тексеріліп, rooms кестесіне INSERT сұранысымен жазылады.</p>
+  <div class="field"><label for="a1">Нөмірі, мысалы 405</label><input id="a1" autocomplete="off"></div>
+  <div class="field"><label for="a2">Санаты</label><select id="a2">${CATEGORIES.map(c => `<option>${c}</option>`).join('')}</select></div>
+  <div class="two"><div class="field"><label for="a3">Қабаты</label><input id="a3" inputmode="numeric"></div><div class="field"><label for="a4">Төсек саны</label><input id="a4" inputmode="numeric"></div></div>
+  <div class="two"><div class="field"><label for="a5">Бағасы, тг</label><input id="a5" inputmode="numeric"></div><div class="field"><label for="a6">Ауданы, м²</label><input id="a6" inputmode="numeric"></div></div>
+  <div class="field"><label for="a7">Соңғы жөндеу жылы</label><input id="a7" inputmode="numeric"></div>
+  <div class="btnrow"><button class="btn" id="save">Сақтау</button><button class="btn ghost" id="cancel">Болдырмау</button></div></div>`;
+  $('#back').onclick = $('#cancel').onclick = () => history.length > 1 ? history.back() : go('#/');
+  $('#save').onclick = () => {
+    const v = i => $('#a' + i).value.trim(), num = v(1), cat = v(2);
+    if ([1, 3, 4, 5, 6, 7].some(i => !v(i))) return toast('Барлық өрістерді толтырыңыз');
+    if ([3, 4, 5, 6, 7].some(i => !/^\d+$/.test(v(i)))) return toast('Сандық өрістерді сан түрінде жазыңыз');
+    const f = +v(3), b = +v(4), p = +v(5), a = +v(6), y = +v(7), cur = new Date().getFullYear();
+    if (f < 1 || f > 20) return toast('Қабат 1-20 аралығында болуы керек');
+    if (b < 1 || b > 8) return toast('Төсек саны 1-8 аралығында болуы керек');
+    if (p <= 0) return toast('Баға нөлден үлкен болуы керек');
+    if (a < 8 || a > 200) return toast('Аудан 8-200 м² аралығында болуы керек');
+    if (y < 1990 || y > cur) return toast(`Жөндеу жылы 1990-${cur} аралығында болуы керек`);
+    if (one('SELECT COUNT(*) FROM rooms WHERE number = ?', [num])) return toast('Мұндай нөмір базада бар: ' + num);
+    run('INSERT INTO rooms (number,category,floor,beds,price,area,year_repair) VALUES (?,?,?,?,?,?,?)', [num, cat, f, b, p, a, y]);
+    toast('Жаңа нөмір қосылды'); go('#/');
+  };
+}
+
+function viewStats() {
+  const total = one('SELECT COUNT(*) FROM rooms'), nb = one('SELECT COUNT(*) FROM bookings'), busy = one('SELECT COUNT(DISTINCT room_id) FROM bookings');
+  const rev = one('SELECT IFNULL(SUM(cost),0) FROM bookings'), nights = one('SELECT IFNULL(SUM(nights),0) FROM bookings');
+  const load = total ? Math.round(busy * 100 / total) : 0;
+  const cats = q('SELECT category, COUNT(*) AS n, AVG(price) AS ap, AVG(area) AS aa, MIN(price) AS mp FROM rooms GROUP BY category HAVING COUNT(*) > 0 ORDER BY COUNT(*) DESC, category ASC');
+  const revs = q('SELECT r.number, r.category, COUNT(b._id) AS n, IFNULL(SUM(b.nights),0) AS nt, IFNULL(SUM(b.cost),0) AS s FROM rooms r LEFT JOIN bookings b ON b.room_id = r._id GROUP BY r._id ORDER BY SUM(b.cost) DESC, r.number ASC');
+  const maxC = Math.max(1, ...cats.map(c => c.n)), maxR = Math.max(1, ...revs.map(r => r.s));
+  const W = 360, sw = 54, gap = cats.length > 1 ? Math.min(30, (W - 32 - cats.length * sw) / (cats.length - 1)) : 0, x0 = (W - (cats.length * sw + (cats.length - 1) * gap)) / 2, len = v => 100 + 26 * v;
+  const strips = cats.map((c, i) => {
+    const x = x0 + i * (sw + gap), L = len(c.n), tip = 18, cx = x + sw / 2, col = STAIN[c.category] || 'var(--stain-neutral)';
+    return `<defs><linearGradient id="g${i}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${col}" stop-opacity="0.95"/><stop offset="0.45" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${x},16 ${x + sw},16 ${x + sw},${16 + L - tip} ${cx},${16 + L} ${x},${16 + L - tip}" fill="#F5F5F7"/>
+    <polygon points="${x},16 ${x + sw},16 ${x + sw},${16 + L - tip} ${cx},${16 + L} ${x},${16 + L - tip}" fill="url(#g${i})"/>
+    <text transform="translate(${cx + 5},${28}) rotate(90)" font-size="13" fill="#05070F" font-family="inherit">${esc(c.category)}</text>
+    <text x="${cx}" y="${16 + L + 26}" text-anchor="middle" font-size="22" font-weight="700" fill="#64D2FF">${c.n}</text>`;
+  }).join('');
+  const maxL = len(maxC);
+  app.innerHTML = `
+  <div class="bar"><button class="icon" id="back" aria-label="Артқа">‹</button><h1>Статистика</h1><span style="width:44px"></span></div>
+  <div class="in">
+  <p class="revenue" id="rv">${money(rev)} тг</p>
+  <p class="cap" style="font-size:16px;color:var(--ink-2)">жалпы табыс: ${nb} брондау, ${nights} тәулік</p>
+  <div class="glass rows" style="margin-top:20px">
+    <div><span>Нөмір саны</span><b>${total}</b></div><div><span>Брондалған нөмір</span><b>${busy} / ${total}, ${load} %</b></div>
+    <div><span>Ең арзан, тг</span><b>${money(one('SELECT IFNULL(MIN(price),0) FROM rooms'))}</b></div>
+    <div><span>Орташа баға, тг</span><b>${money(avgPrice())}</b></div>
+    <div><span>Ең қымбат, тг</span><b>${money(one('SELECT IFNULL(MAX(price),0) FROM rooms'))}</b></div></div>
+  <h2 class="h2">Санаттар бойынша</h2>
+  <div class="glass sql">SELECT category, COUNT(*), AVG(price), AVG(area), MIN(price)\nFROM rooms GROUP BY category\nHAVING COUNT(*) &gt; 0</div>
+  <svg class="strips" viewBox="0 0 ${W} ${16 + maxL + 44}" role="img" aria-label="Санаттар бойынша нөмір саны: ${cats.map(c => c.category + ' ' + c.n).join(', ')}"><line x1="16" y1="16" x2="${W - 16}" y2="16" stroke="#FFFFFF66" stroke-width="1.5"/>${strips}</svg>
+  <div class="glass" style="padding:4px 18px">${cats.map(c => `<div class="seg"><div class="t"><span>${esc(c.category)}</span><span>${c.n} нөмір</span></div><div class="bar2"><i style="width:${c.n * 100 / maxC}%"></i></div><span class="cap">орташа ${money(c.ap)} тг, аудан ${Math.round(c.aa)} м², арзаны ${money(c.mp)} тг</span></div>`).join('')}</div>
+  <h2 class="h2">Нөмірлердің табысы</h2>
+  <div class="glass sql">SELECT r.number, COUNT(b._id), SUM(b.nights), SUM(b.cost)\nFROM rooms r LEFT JOIN bookings b\n  ON b.room_id = r._id\nGROUP BY r._id ORDER BY SUM(b.cost) DESC</div>
+  <div class="glass" style="padding:4px 18px">${revs.map(r => `<div class="seg"><div class="t"><span>№${esc(r.number)}</span><span>${money(r.s)} тг</span></div><div class="bar2"><i style="width:${r.s * 100 / maxR}%"></i></div><span class="cap">${esc(r.category)}, ${r.n} брондау, ${r.nt} тәулік</span></div>`).join('')}</div>
+  <p class="cap" style="margin-top:18px">Көрсеткіштер экран ашылған сайын SQL сұраныстарымен қайта есептеледі.</p></div>`;
+  $('#back').onclick = () => history.length > 1 ? history.back() : go('#/');
+  countUp($('#rv'), rev, n => money(n) + ' тг');
+}
+
+/* ====== Іске қосу ====== */
+addEventListener('hashchange', route);
+(async function init() {
+  try {
+    const SQL = await initSqlJs({ locateFile: f => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f });
+    let saved = null; try { saved = localStorage.getItem(KEY); } catch (e) { /* жеке режим */ }
+    if (saved) { try { db = new SQL.Database(fromB64(saved)); one('SELECT COUNT(*) FROM rooms'); } catch (e) { db = null; } }
+    if (!db) { db = new SQL.Database(); createSchema(); seed(); save(); }
+    db.run('PRAGMA foreign_keys = ON');
+    route();
+  } catch (e) {
+    app.innerHTML = '<div class="load"><div><div class="big" style="font-size:2rem">Жүктелмеді</div><p>SQLite жүктеу үшін интернет қажет. Желіні тексеріп, бетті жаңартыңыз.</p></div></div>';
+  }
+})();
+</script>
+</body>
+</html>
