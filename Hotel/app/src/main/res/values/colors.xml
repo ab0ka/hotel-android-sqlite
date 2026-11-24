@@ -1,12 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Apple-keynote direction: deep navy ground with soft colour light, white type,
+  translucent glass panels and translucent secondary labels. One accent: blue.
+-->
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="paper">#FF05070F</color>
+    <color name="paper_bar">#E605070F</color>
+    <color name="paper_2">#14FFFFFF</color>
+    <color name="paper_3">#1FFFFFFF</color>
+    <color name="sheet">#FF1B2234</color>
+
+    <color name="ink">#FFFFFFFF</color>
+    <color name="ink_2">#D1FFFFFF</color>
+    <color name="muted">#99FFFFFF</color>
+    <color name="pencil">#80FFFFFF</color>
+    <color name="rule">#1FFFFFFF</color>
+
+    <color name="accent">#FF0A84FF</color>
+    <color name="accent_2">#FF64D2FF</color>
+    <color name="accent_deep">#FF0A5FCC</color>
+    <color name="accent_ink">#FFFFFFFF</color>
+    <color name="focus">#FF64D2FF</color>
+    <color name="warm">#FFFFB340</color>
+
+    <color name="card">#1FFFFFFF</color>
+    <color name="card_edge">#33FFFFFF</color>
+    <color name="glass_dim">#0DFFFFFF</color>
+
+    <color name="stain_neutral">#FF8E8E93</color>
+    <color name="stain_1">#FFFF6B8A</color>
+    <color name="stain_2">#FF30D158</color>
+    <color name="stain_3">#FFFFB340</color>
+    <color name="stain_4">#FF64D2FF</color>
+
+    <color name="warn">#FFFF9A91</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primary">#FF4E342E</color>
-    <color name="primary_dark">#FF3E2723</color>
-    <color name="accent">#FF00796B</color>
-    <color name="screen">#FFF1F1F1</color>
-    <color name="divider">#FFDDDDDD</color>
-    <color name="text_second">#FF666666</color>
-    <color name="warn">#FFC62828</color>
+    <color name="black">#FF000000</color>
 </resources>

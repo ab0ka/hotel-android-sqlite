@@ -3,66 +3,77 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Қонақтың аты-жөні"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <EditText
-        android:id="@+id/editGuest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="мысалы: Ахметов Д."
-        android:importantForAutofill="no"
-        android:inputType="text|textNoSuggestions"
-        android:textColor="@color/black"
-        android:textColorHint="@color/text_second" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Тәулік саны"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <EditText
-        android:id="@+id/editNights"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="1-30"
-        android:importantForAutofill="no"
-        android:inputType="number"
-        android:textColor="@color/black"
-        android:textColorHint="@color/text_second" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Адам саны"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <EditText
-        android:id="@+id/editPersons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="төсек санынан аспауы керек"
-        android:importantForAutofill="no"
-        android:inputType="number"
-        android:textColor="@color/black"
-        android:textColorHint="@color/text_second" />
+    android:paddingStart="24dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="24dp">
 
     <TextView
         android:id="@+id/txtPriceInfo"
+        style="@style/Text.Hotel.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Hotel.Input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Қонақтың аты-жөні">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editGuest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="textPersonName|textCapWords" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Hotel.Input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:hint="Тәулік, 1 мен 30">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editNights"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Hotel.Input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Адам саны">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editPersons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <!-- Живой расчёт, карандашом: cost = nights x price -->
+    <TextView
+        android:id="@+id/txtCostPreview"
+        style="@style/Text.Hotel.Serif"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textColor="@color/text_second"
-        android:textSize="12sp" />
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_stock"
+        android:padding="14dp"
+        android:textSize="18sp" />
 </LinearLayout>

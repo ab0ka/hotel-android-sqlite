@@ -3,44 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="24dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="24dp">
 
-    <TextView
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Hotel.Input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Жаңа баға (тг/тәулік)"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
+        android:hint="Бағасы, тг тәулігіне">
 
-    <EditText
-        android:id="@+id/editPrice"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Hotel.Input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:importantForAutofill="no"
-        android:inputType="number"
-        android:textColor="@color/black" />
+        android:layout_marginTop="4dp"
+        android:hint="Төсек саны">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Төсек саны"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <EditText
-        android:id="@+id/editBeds"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:importantForAutofill="no"
-        android:inputType="number"
-        android:textColor="@color/black" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Мәліметтер UPDATE ... WHERE _id = ? сұранысы арқылы жаңартылады."
-        android:textColor="@color/text_second"
-        android:textSize="12sp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editBeds"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

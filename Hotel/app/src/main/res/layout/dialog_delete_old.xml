@@ -3,30 +3,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="24dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="24dp">
 
     <TextView
+        style="@style/Text.Hotel.Caption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Жөндеу жылы осы жылдан ескі нөмірлер жойылады:"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
+        android:text="Жөндеу жылы көрсетілген жылдан ескі нөмірлер және олардың брондаулары жойылады." />
 
-    <EditText
-        android:id="@+id/editYear"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Hotel.Input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="мысалы: 2020"
-        android:importantForAutofill="no"
-        android:inputType="number"
-        android:textColor="@color/black"
-        android:textColorHint="@color/text_second" />
+        android:layout_marginTop="10dp"
+        android:hint="Жыл, мысалы 2020">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Нөмірмен бірге оның брондаулары да жойылады (DELETE)."
-        android:textColor="@color/warn"
-        android:textSize="12sp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

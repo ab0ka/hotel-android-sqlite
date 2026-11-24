@@ -1,181 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_screen"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="@color/white" />
+    <include layout="@layout/appbar" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:padding="16dp">
 
             <TextView
+                style="@style/Text.Hotel.Display"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Нөмірі"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="мысалы: 405"
-                android:importantForAutofill="no"
-                android:inputType="text|textNoSuggestions"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
+                android:paddingTop="8dp"
+                android:text="Жаңа жазба"
+                android:textSize="44sp" />
 
             <TextView
+                style="@style/Text.Hotel.Caption"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Санаты"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
+                android:paddingTop="4dp"
+                android:paddingBottom="18dp"
+                android:text="Нөмір бірегей болуы керек. Мәліметтер тексеріліп, rooms кестесіне INSERT сұранысымен жазылады." />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/rule" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Hotel.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Нөмірі, мысалы 405">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="text|textNoSuggestions" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                style="@style/Text.Hotel.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="14dp"
+                android:text="Санаты" />
 
             <Spinner
                 android:id="@+id/spinnerCategory"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Қабаты"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editFloor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="1-20"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Төсек саны"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editBeds"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="1-8"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Бағасы (тг/тәулік)"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editPrice"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="мысалы: 28000"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Ауданы (м²)"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editArea"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="8-200"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Соңғы жөндеу жылы"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/editYear"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="мысалы: 2024"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:textColor="@color/black"
-                android:textColorHint="@color/text_second" />
+                android:minHeight="52dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="6dp"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnSave"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Hotel.Input"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:hint="Қабаты">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editFloor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Hotel.Input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Төсек саны">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editBeds"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Hotel.Input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:hint="Бағасы, тг">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Hotel.Input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Ауданы, м²">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Hotel.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="Соңғы жөндеу жылы">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editYear"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSave"
+                    style="@style/Widget.Hotel.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Сақтау" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
-                    android:layout_width="0dp"
+                    style="@style/Widget.Hotel.Button.Outline"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:layout_weight="1"
-                    android:text="Болдырмау" />
+                    android:layout_marginStart="8dp"
+                    android:text="Болдырмау"
+                    />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Мәліметтер тексерілгеннен кейін rooms кестесіне INSERT сұранысы арқылы жазылады."
-                android:textColor="@color/text_second"
-                android:textSize="12sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

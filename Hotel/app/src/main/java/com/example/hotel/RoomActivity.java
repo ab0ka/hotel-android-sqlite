@@ -30,7 +30,8 @@ public class RoomActivity extends AppCompatActivity {
     private int roomId;
     private Room room;
 
-    private TextView txtTitle, txtDetails, txtTotal;
+    private TextView txtTitle, txtCategory, txtPrice, txtPerBed, txtFloor, txtBeds,
+            txtArea, txtRepair, txtRepairAge, txtTotal, txtEmptyBookings;
     private ListView listBookings;
     private BookingAdapter adapter;
     private final List<Booking> data = new ArrayList<>();
@@ -39,6 +40,7 @@ public class RoomActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
+        Ui.applyInsets(findViewById(R.id.root), findViewById(R.id.appbar));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Нөмір туралы");
@@ -53,7 +55,15 @@ public class RoomActivity extends AppCompatActivity {
         Log.i(TAG, "Ашылған нөмірдің _id = " + roomId);
 
         txtTitle = findViewById(R.id.txtTitle);
-        txtDetails = findViewById(R.id.txtDetails);
+        txtCategory = findViewById(R.id.txtCategory);
+        txtPrice = findViewById(R.id.txtPrice);
+        txtPerBed = findViewById(R.id.txtPerBed);
+        txtFloor = findViewById(R.id.txtFloor);
+        txtBeds = findViewById(R.id.txtBeds);
+        txtArea = findViewById(R.id.txtArea);
+        txtRepair = findViewById(R.id.txtRepair);
+        txtRepairAge = findViewById(R.id.txtRepairAge);
+        txtEmptyBookings = findViewById(R.id.txtEmptyBookings);
         txtTotal = findViewById(R.id.txtTotal);
         listBookings = findViewById(R.id.listBookings);
         Button btnBook = findViewById(R.id.btnBook);
@@ -82,18 +92,20 @@ public class RoomActivity extends AppCompatActivity {
             return;
         }
 
-        txtTitle.setText("№" + room.getNumber() + " · " + room.getCategory());
-        txtDetails.setText("Қабаты: " + room.getFloor()
-                + "\nТөсек саны: " + room.getBeds()
-                + "\nАуданы: " + room.getArea() + " м²"
-                + "\nБағасы: " + RoomAdapter.money(room.getPrice()) + " тг/тәулік"
-                + "\nБір төсекке: " + RoomAdapter.money(room.pricePerBed()) + " тг"
-                + "\nСоңғы жөндеу: " + room.getYearRepair() + " жыл ("
-                + room.repairAge(DbHelper.currentYear()) + " жыл бұрын)");
+        txtTitle.setText("№" + room.getNumber());
+        txtCategory.setText(room.getCategory());
+        Ui.countUp(txtPrice, room.getPrice(), v -> RoomAdapter.money(v) + " тг");
+        txtPerBed.setText("тәулігіне, бір төсекке " + RoomAdapter.money(room.pricePerBed()) + " тг");
+        txtFloor.setText(String.valueOf(room.getFloor()));
+        txtBeds.setText(String.valueOf(room.getBeds()));
+        txtArea.setText(room.getArea() + " м²");
+        txtRepair.setText(String.valueOf(room.getYearRepair()));
+        txtRepairAge.setText("жөндеу, " + room.repairAge(DbHelper.currentYear()) + " жыл");
 
         data.clear();
         data.addAll(db.bookingsOf(roomId));
         adapter.notifyDataSetChanged();
+        txtEmptyBookings.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
 
         int nights = 0;
         int sum = 0;
@@ -101,8 +113,8 @@ public class RoomActivity extends AppCompatActivity {
             nights += b.getNights();
             sum += b.getCost();
         }
-        txtTotal.setText("Брондау: " + data.size() + " · барлығы " + nights
-                + " тәулік · " + RoomAdapter.money(sum) + " тг");
+        txtTotal.setText(data.size() + " брондау, " + nights
+                + " тәулік, барлығы " + RoomAdapter.money(sum) + " тг");
         Log.i(TAG, "№" + room.getNumber() + ": " + data.size() + " брондау, "
                 + nights + " тәулік, " + sum + " тг");
     }
@@ -113,9 +125,33 @@ public class RoomActivity extends AppCompatActivity {
         EditText editGuest = view.findViewById(R.id.editGuest);
         EditText editNights = view.findViewById(R.id.editNights);
         EditText editPersons = view.findViewById(R.id.editPersons);
-        TextView txtPrice = view.findViewById(R.id.txtPriceInfo);
-        txtPrice.setText("Нөмірдің бағасы: " + RoomAdapter.money(room.getPrice())
-                + " тг/тәулік. Құны тәулік санына көбейтіледі.");
+        TextView txtPriceInfo = view.findViewById(R.id.txtPriceInfo);
+        txtPriceInfo.setText("Нөмір " + room.getNumber() + ", "
+                + RoomAdapter.money(room.getPrice()) + " тг тәулігіне, төсек: "
+                + room.getBeds());
+        TextView txtPreview = view.findViewById(R.id.txtCostPreview);
+        txtPreview.setText("Құны: 0 тг");
+        editNights.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                int n = 0;
+                try {
+                    n = Integer.parseInt(s.toString().trim());
+                } catch (NumberFormatException ignored) {
+                    // бос немесе дұрыс емес мән — құны 0
+                }
+                txtPreview.setText("Құны: " + n + " × " + RoomAdapter.money(room.getPrice())
+                        + " = " + RoomAdapter.money(n * room.getPrice()) + " тг");
+            }
+        });
 
         new AlertDialog.Builder(this)
                 .setTitle("Брондау қосу")

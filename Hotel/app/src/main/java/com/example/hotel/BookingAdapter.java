@@ -31,15 +31,11 @@ public class BookingAdapter extends ArrayAdapter<Booking> {
             return row;
         }
 
-        TextView txtGuest = row.findViewById(R.id.txtGuest);
-        TextView txtInfo = row.findViewById(R.id.txtInfo);
-        TextView txtCost = row.findViewById(R.id.txtCost);
-
-        txtGuest.setText(b.getGuest());
-        txtInfo.setText(b.getDate() + " · " + b.getNights() + " тәулік · "
-                + b.getPersons() + " адам · тәулігіне "
-                + RoomAdapter.money(b.costPerNight()) + " тг");
-        txtCost.setText(RoomAdapter.money(b.getCost()) + " тг");
+        ((TextView) row.findViewById(R.id.txtGuest)).setText(b.getGuest());
+        ((TextView) row.findViewById(R.id.txtInfo)).setText(b.getDate() + ", "
+                + b.getNights() + " тәулік, " + b.getPersons() + " адам");
+        ((TextView) row.findViewById(R.id.txtCost)).setText(
+                RoomAdapter.money(b.getCost()) + " тг");
 
         return row;
     }

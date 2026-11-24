@@ -201,6 +201,11 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    /** Ағымдағы ORDER BY бөлігі (экранда SQL көрсету үшін). */
+    public String sortSql() {
+        return SORT_SQL[sort];
+    }
+
     public String sortName() {
         return SORT_NAMES[sort];
     }
@@ -217,6 +222,27 @@ public class DbHelper extends SQLiteOpenHelper {
     public List<Room> all() {
         Log.i(TAG, "Барлық нөмірлер сұралды");
         return readRooms(null, null);
+    }
+
+    /** Шахматка үшін: барлық нөмір, тұрақты тәртіппен (сұрыптауға тәуелсіз). */
+    public List<Room> allUnsorted() {
+        List<Room> list = new ArrayList<>();
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().query(T_ROOMS, ROOM_COLUMNS, null, null, null, null,
+                    R_NUMBER + " ASC");
+            while (c.moveToNext()) {
+                list.add(new Room(c.getInt(0), c.getString(1), c.getString(2), c.getInt(3),
+                        c.getInt(4), c.getInt(5), c.getInt(6), c.getInt(7)));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "allUnsorted() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return list;
     }
 
     /** а) Берілген санаттағы барлық нөмірлер. */
@@ -450,6 +476,26 @@ public class DbHelper extends SQLiteOpenHelper {
         return (int) singleNumber("SELECT COUNT(DISTINCT " + B_ROOM + ") FROM " + T_BOOKINGS);
     }
 
+    /** Кемінде бір брондауы бар нөмірлердің _id жиыны (тізімдегі «Брондалған» белгісі). */
+    public java.util.Set<Integer> bookedRoomIds() {
+        java.util.Set<Integer> ids = new java.util.HashSet<>();
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery("SELECT DISTINCT " + B_ROOM
+                    + " FROM " + T_BOOKINGS, null);
+            while (c.moveToNext()) {
+                ids.add(c.getInt(0));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "bookedRoomIds() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return ids;
+    }
+
     private long singleNumber(String sql) {
         Cursor c = null;
         try {
@@ -548,6 +594,75 @@ public class DbHelper extends SQLiteOpenHelper {
             Log.i(TAG, "revenueByRoom(): " + rows.size() + " жол (JOIN + GROUP BY)");
         } catch (Exception e) {
             Log.e(TAG, "revenueByRoom() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return rows;
+    }
+
+    /** Статистика жолы: диаграмма сызықтары үшін құрылымдалған нәтиже. */
+    public static class StatRow {
+        public final String label;
+        public final String sub;
+        public final long value;
+
+        StatRow(String label, String sub, long value) {
+            this.label = label;
+            this.sub = sub;
+            this.value = value;
+        }
+    }
+
+    /** Санаттар кесімі (GROUP BY ... HAVING), value = нөмір саны. */
+    public List<StatRow> categoryRows() {
+        List<StatRow> rows = new ArrayList<>();
+        String sql = "SELECT " + R_CATEGORY + ", COUNT(*), AVG(" + R_PRICE + "), "
+                + "AVG(" + R_AREA + "), MIN(" + R_PRICE + ") "
+                + "FROM " + T_ROOMS + " GROUP BY " + R_CATEGORY
+                + " HAVING COUNT(*) > 0 ORDER BY COUNT(*) DESC, " + R_CATEGORY + " ASC";
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(sql, null);
+            while (c.moveToNext()) {
+                rows.add(new StatRow(c.getString(0),
+                        "орташа " + RoomAdapter.money((int) Math.round(c.getDouble(2)))
+                                + " тг, аудан " + Math.round(c.getDouble(3))
+                                + " м², арзаны " + RoomAdapter.money(c.getInt(4)) + " тг",
+                        c.getInt(1)));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "categoryRows() қатесі: " + e.getMessage(), e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return rows;
+    }
+
+    /** Нөмірлердің табысы (LEFT JOIN + GROUP BY), value = түскен сома. */
+    public List<StatRow> revenueRows() {
+        List<StatRow> rows = new ArrayList<>();
+        String sql = "SELECT r." + R_NUMBER + ", r." + R_CATEGORY + ", "
+                + "COUNT(b." + B_ID + "), IFNULL(SUM(b." + B_NIGHTS + "), 0), "
+                + "IFNULL(SUM(b." + B_COST + "), 0) "
+                + "FROM " + T_ROOMS + " r "
+                + "LEFT JOIN " + T_BOOKINGS + " b ON b." + B_ROOM + " = r." + R_ID + " "
+                + "GROUP BY r." + R_ID + " "
+                + "ORDER BY SUM(b." + B_COST + ") DESC, r." + R_NUMBER + " ASC";
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(sql, null);
+            while (c.moveToNext()) {
+                rows.add(new StatRow("№" + c.getString(0),
+                        c.getString(1) + ", " + c.getInt(2) + " брондау, "
+                                + c.getInt(3) + " тәулік",
+                        c.getLong(4)));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "revenueRows() қатесі: " + e.getMessage(), e);
         } finally {
             if (c != null) {
                 c.close();

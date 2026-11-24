@@ -7,17 +7,28 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * ListView үшін нөмірлер тізімін көрсететін адаптер.
- * Әр жол item_room.xml макеті бойынша құрылады.
+ * Әр жол item_room.xml макеті бойынша құрылады: журнал жолы, карточка емес.
  */
 public class RoomAdapter extends ArrayAdapter<Room> {
 
+    private Set<Integer> booked = new HashSet<>();
+
     public RoomAdapter(Context context, List<Room> items) {
         super(context, 0, items);
+    }
+
+    /** Брондауы бар нөмірлердің _id жиыны: жолдағы «брондалған» жазуы үшін. */
+    public void setBooked(Set<Integer> ids) {
+        booked = ids;
     }
 
     @Override
@@ -33,18 +44,37 @@ public class RoomAdapter extends ArrayAdapter<Room> {
             return row;
         }
 
-        TextView txtNumber = row.findViewById(R.id.txtNumber);
-        TextView txtInfo = row.findViewById(R.id.txtInfo);
-        TextView txtPrice = row.findViewById(R.id.txtPrice);
-        TextView txtExtra = row.findViewById(R.id.txtExtra);
+        ((TextView) row.findViewById(R.id.txtNumber)).setText(r.getNumber());
+        ((TextView) row.findViewById(R.id.txtCategory)).setText(r.getCategory());
+        ((TextView) row.findViewById(R.id.txtInfo)).setText(r.getFloor() + "-қабат, "
+                + r.getBeds() + " төсек, " + r.getArea() + " м²");
+        ((TextView) row.findViewById(R.id.txtPrice)).setText(money(r.getPrice()) + " тг");
 
-        txtNumber.setText("№" + r.getNumber() + " · " + r.getCategory());
-        txtInfo.setText(r.getFloor() + "-қабат · " + r.getBeds() + " төсек · "
-                + r.getArea() + " м² · жөндеу " + r.getYearRepair());
-        txtPrice.setText(money(r.getPrice()) + " тг");
-        txtExtra.setText("тәулік" + (r.isFamily() ? " · отбасылық" : ""));
+        // Күй сөзбен ғана: «брондалған» сия түсімен, «бос» бозғылт
+        TextView txtStatus = row.findViewById(R.id.txtStatus);
+        boolean isBooked = booked.contains(r.getId());
+        txtStatus.setText(isBooked ? "брондалған" : "бос");
+        txtStatus.setTextColor(ContextCompat.getColor(getContext(),
+                isBooked ? R.color.accent_2 : R.color.muted));
 
         return row;
+    }
+
+    /** Категорияға тән түс: полоска-үлгідегі дақ түсі. */
+    public static int categoryColor(Context context, String category) {
+        int res;
+        if ("Жартылай люкс".equals(category)) {
+            res = R.color.stain_4;
+        } else if ("Люкс".equals(category)) {
+            res = R.color.stain_3;
+        } else if ("Отбасылық".equals(category)) {
+            res = R.color.stain_1;
+        } else if ("Бизнес".equals(category)) {
+            res = R.color.stain_2;
+        } else {
+            res = R.color.stain_neutral;
+        }
+        return ContextCompat.getColor(context, res);
     }
 
     /** Санды мыңдықтарға бөліп жазады: 24000 -> 24 000. */

@@ -1,91 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_screen"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="@color/white" />
+    <include layout="@layout/appbar" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:paddingBottom="40dp">
 
+            <!-- Главная фраза экрана: выручка -->
             <TextView
+                android:id="@+id/kpiRevenue"
+                style="@style/Text.Hotel.Display"
+                android:textColor="@color/accent_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. Жалпы көрсеткіштер (COUNT, AVG, MIN, MAX, SUM)"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:includeFontPadding="false"
+                android:paddingStart="16dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="16dp"
+                android:textSize="60sp" />
 
             <TextView
-                android:id="@+id/txtGeneral"
+                android:id="@+id/kpiSub"
+                style="@style/Text.Hotel.Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="2dp"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
+                android:paddingStart="16dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="22dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/rule" />
+
+            <LinearLayout
+                android:id="@+id/containerFigures"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_stock"
+                android:orientation="vertical"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+            <!-- Санаттар -->
+            <TextView
+                style="@style/Text.Hotel.Display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingTop="56dp"
+                android:paddingEnd="16dp"
+                android:text="Санаттар бойынша"
+                android:textSize="40sp" />
 
             <TextView
+                android:id="@+id/sqlCategories"
+                style="@style/Text.Hotel.Code"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="2. Санаттар бойынша (GROUP BY ... HAVING)"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtCategories"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_stock"
                 android:lineSpacingExtra="3dp"
-                android:textColor="@color/black"
-                android:textSize="13sp" />
+                android:padding="14dp" />
 
-            <TextView
+            <com.example.hotel.StripChartView
+                android:id="@+id/stripCategories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="3. Нөмірлердің табысы (LEFT JOIN + GROUP BY)"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="12dp" />
 
-            <TextView
-                android:id="@+id/txtRevenue"
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/rule" />
+
+            <LinearLayout
+                android:id="@+id/containerCategories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+            <!-- Табыс -->
+            <TextView
+                style="@style/Text.Hotel.Display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingTop="56dp"
+                android:paddingEnd="16dp"
+                android:text="Нөмірлердің табысы"
+                android:textSize="40sp" />
+
+            <TextView
+                android:id="@+id/sqlRevenue"
+                style="@style/Text.Hotel.Code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_stock"
                 android:lineSpacingExtra="3dp"
-                android:textColor="@color/black"
-                android:textSize="13sp" />
+                android:padding="14dp" />
 
-            <TextView
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/rule" />
+
+            <LinearLayout
+                android:id="@+id/containerRevenue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:text="Көрсеткіштер экран ашылған сайын SQL сұраныстары арқылы қайта есептеледі."
-                android:textColor="@color/text_second"
-                android:textSize="12sp" />
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+            <TextView
+                style="@style/Text.Hotel.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="16dp"
+                android:text="Көрсеткіштер экран ашылған сайын SQL сұраныстарымен қайта есептеледі." />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

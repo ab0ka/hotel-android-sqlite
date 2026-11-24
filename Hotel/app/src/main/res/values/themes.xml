@@ -1,8 +1,159 @@
 <resources>
-    <style name="Theme.Hotel" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="android:windowBackground">@color/screen</item>
+    <style name="Theme.Hotel" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorOnPrimary">@color/accent_ink</item>
+        <item name="colorPrimaryContainer">@color/sheet</item>
+        <item name="colorOnPrimaryContainer">@color/ink</item>
+        <item name="colorSecondary">@color/accent_2</item>
+        <item name="colorOnSecondary">@color/paper</item>
+        <item name="colorSecondaryContainer">@color/sheet</item>
+        <item name="colorOnSecondaryContainer">@color/ink</item>
+        <item name="colorSurface">@color/sheet</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorOnSurfaceVariant">@color/muted</item>
+        <item name="colorSurfaceContainerHigh">@color/sheet</item>
+        <item name="colorOutline">@color/card_edge</item>
+        <item name="colorOutlineVariant">@color/rule</item>
+        <item name="colorError">@color/warn</item>
+        <item name="colorControlActivated">@color/accent_2</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowBackground">@drawable/bg_screen</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Hotel.Dialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Hotel.AlertDialog</item>
+    </style>
+
+    <style name="ThemeOverlay.Hotel.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/sheet</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Hotel.Round</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/Text.Hotel.DialogTitle</item>
+    </style>
+
+    <style name="ThemeOverlay.Hotel.AlertDialog" parent="ThemeOverlay.Material3.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="colorSurface">@color/sheet</item>
+        <item name="buttonBarButtonStyle">@style/Widget.Material3.Button.TextButton.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.Hotel.Round" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="ThemeOverlay.Hotel.Toolbar" parent="ThemeOverlay.Material3.Dark">
+        <item name="colorControlNormal">@color/ink</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+    </style>
+
+    <!-- Headlines: very large, bold, tight, like a keynote slide -->
+    <style name="Text.Hotel.Display" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.03</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="Text.Hotel.Serif" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="Text.Hotel.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="Text.Hotel.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="Text.Hotel.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/ink_2</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <!-- Translucent secondary label -->
+    <style name="Text.Hotel.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Text.Hotel.Code" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+        <item name="android:textColor">@color/ink_2</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Primary: blue pill. Secondary: glass pill with a light edge -->
+    <style name="Widget.Hotel.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">999dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textColor">@color/btn_text</item>
+        <item name="backgroundTint">@color/btn_bg</item>
+        <item name="rippleColor">@color/accent_2</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Hotel.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">999dp</item>
+        <item name="strokeColor">@color/card_edge</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textColor">@color/btn_outline_text</item>
+        <item name="backgroundTint">@color/btn_outline_bg</item>
+        <item name="rippleColor">#33FFFFFF</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Hotel.Tabs" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorColor">@color/ink</item>
+        <item name="tabIndicatorHeight">3dp</item>
+        <item name="tabTextColor">@color/tab_text</item>
+        <item name="tabRippleColor">@android:color/transparent</item>
+        <item name="tabTextAppearance">@style/Text.Hotel.Tab</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="Text.Hotel.Tab" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">15sp</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- Field: rounded glass well, light edge, blue ring on focus -->
+    <style name="Widget.Hotel.Input" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/paper_2</item>
+        <item name="boxStrokeColor">@color/accent_2</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/accent_2</item>
+        <item name="android:textColorHint">@color/muted</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
     </style>
 </resources>

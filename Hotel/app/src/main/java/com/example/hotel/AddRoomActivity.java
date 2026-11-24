@@ -28,6 +28,7 @@ public class AddRoomActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_room);
+        Ui.applyInsets(findViewById(R.id.root), findViewById(R.id.appbar));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Нөмір қосу");
