@@ -14,6 +14,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_video"
+        android:title="Бейне"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_mybookings"
         android:title="Менің брондауларым"
         app:showAsAction="never" />

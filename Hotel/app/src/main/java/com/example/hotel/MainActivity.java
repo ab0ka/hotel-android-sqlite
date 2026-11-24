@@ -556,6 +556,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        if (id == R.id.action_video) {
+            startActivity(new Intent(this, VideoActivity.class));
+            return true;
+        }
         if (id == R.id.action_3d) {
             startActivity(new Intent(this, Hotel3DActivity.class));
             return true;

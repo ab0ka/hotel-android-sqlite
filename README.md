@@ -80,7 +80,7 @@
 | 9 | Фрагменты и их жизненный цикл | статистика: `StatsOverviewFragment`, `StatsCategoriesFragment`, `StatsRevenueFragment` |
 | 10 | SQLite: подключение, сохранение | `rooms`, `bookings`, `users` |
 | 11 | update, delete, query, фильтр, сортировка, группировка | `DbHelper`, `GROUP BY`, `JOIN`, подзапрос |
-| 12 | Мультимедиа и анимация | `ObjectAnimator`, `ValueAnimator`, анимация списка, звук `ToneGenerator`; видео в проекте нет |
+| 12 | Мультимедиа и анимация | `ObjectAnimator`, `ValueAnimator`, анимация списка, звук `ToneGenerator`, видео 15 с в `VideoActivity` (`VideoView`, `res/raw/hotel_intro.mp4`) |
 | 13 | Работа с файлами | `hotel_report.csv`, `SharedPreferences` |
 | 14 | 2D-графика | `StripChartView` на `Canvas` |
 | 15 | 3D-графика | `Hotel3DActivity`, `Hotel3DRenderer` (OpenGL ES 2.0) |
@@ -169,11 +169,12 @@ Hotel/app/src/main/
 │   ├── MyBookingsActivity.java   брони клиента
 │   ├── StatsActivity.java        вкладки статистики
 │   ├── Stats*Fragment.java       3 фрагмента статистики
+│   ├── VideoActivity.java        видео (VideoView)
 │   ├── Hotel3DActivity.java      3D-шахматка (OpenGL ES 2.0)
 │   ├── Hotel3DRenderer.java      шейдеры и куб
 │   ├── RoomAdapter, BookingAdapter   адаптеры ListView
 │   └── StripChartView, StatsViews, Ui  2D-диаграмма, общие помощники
-└── res/layout/                   19 макетов на виджетах Material 3
+└── res/layout/                   20 макетов на виджетах Material 3
 ```
 
 Архитектура — три слоя: модели, слой данных (`DbHelper`) и UI. Ни один `Activity` не пишет SQL — все обращения идут через методы `DbHelper`.
