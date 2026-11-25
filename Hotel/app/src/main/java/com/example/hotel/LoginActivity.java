@@ -79,8 +79,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void submit() {
-        String username = editUser.getText().toString().trim();
-        String password = editPass.getText().toString();
+        // Логин регистрге тәуелсіз, бос орын мен автотолтырудан қалған бос орындар алынып тасталады
+        String username = editUser.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+        String password = editPass.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
             fail("Логин мен құпиясөзді жазыңыз");
