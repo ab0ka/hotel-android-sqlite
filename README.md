@@ -4,6 +4,8 @@
 
 **Android-приложение для учёта гостиничных номеров и бронирований на SQLite**
 
+[Презентация (слайд-шоу)](https://hotel-deck.vercel.app) · [APK](скрины/Қонақүй.apk) · [Word-отчёт](Топтық_жұмыс_Қонақүй_ЖИТ-31_жаңартылған.docx) · [Видео](Қонақүй_видео.mp4)
+
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](https://developer.android.com)
 [![Language](https://img.shields.io/badge/language-Java-007396?style=flat-square&logo=openjdk&logoColor=white)](https://docs.oracle.com/javase/)
 [![Database](https://img.shields.io/badge/database-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org)
