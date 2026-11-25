@@ -196,6 +196,42 @@ td.right, th.right { text-align: right; }
 @media (max-width: 40rem) { .prints .print:nth-child(2n) { margin-top: 0; } .print img { height: auto; width: 100%; } .figs, .figs.three { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .lights i { animation: none; } }
 @media print { .rail, .bar, .lights { display: none; } .js .rv, .js .sw .wi, .js .board .t { opacity: 1; transform: none; } .slide { min-height: auto; break-after: page; } }
+
+/* ---------- Режим слайд-шоу: один слайд на экран ---------- */
+html, body { height: 100%; overflow: hidden; scroll-snap-type: none; scroll-behavior: auto; }
+main { position: fixed; inset: 0; }
+.slide { position: absolute; inset: 0; min-height: 0; height: 100%; padding: 0 0 var(--space-2xl); overflow: hidden; border-top: 0 !important; }
+.js .slide { opacity: 0; visibility: hidden; pointer-events: none; transform: scale(1.015);
+  transition: opacity .55s var(--ease-out), transform .55s var(--ease-out), visibility 0s linear .55s; }
+.js .slide.active { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition-delay: 0s; }
+.slide > .container { transform-origin: center center; transform: scale(var(--fit, 1)); flex: none; }
+.slide h2 { max-width: none; }
+.vidbox { margin: 0; }
+.vidbox video { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: var(--radius-card); border: 1px solid var(--color-edge); background: var(--color-paper); }
+.vidbox figcaption { margin-top: var(--space-sm); }
+.hero h1 { max-width: none; white-space: nowrap; font-size: min(7vw, 7rem); }
+.span-5 .row { grid-template-columns: auto minmax(0, 1fr); }
+.span-5 .row .n, .span-5 .row h3 { grid-column: auto; }
+.span-5 .row p { grid-column: 2; }
+.rail { right: var(--space-md); }
+.deckbar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: var(--z-sticky-nav); display: flex; align-items: center; gap: var(--space-2xs);
+  padding: var(--space-2xs); border-radius: 999px; background: var(--color-glass); border: 1px solid var(--color-edge);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); }
+.deckbar button { all: unset; box-sizing: border-box; display: grid; place-items: center; min-width: 44px; height: 44px; border-radius: 999px; cursor: pointer;
+  color: var(--color-ink); font-size: 14px; font-weight: 500; padding: 0 var(--space-md); transition: background-color .2s; }
+.deckbar button:hover { background: var(--color-glass-2); }
+.deckbar button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.deckbar button[disabled] { color: var(--color-muted); background: transparent; cursor: not-allowed; }
+.deckbar svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.deckbar .count { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; color: var(--color-ink-2); font-size: 14px; }
+.deckbar .fs { padding: 0 var(--space-md); }
+@media print {
+  html, body { height: auto; overflow: visible; }
+  main { position: static; }
+  .slide { position: relative; height: auto; min-height: 100svh; opacity: 1; visibility: visible; transform: none; padding: var(--space-xl) 0; break-after: page; }
+  .slide > .container { transform: none; }
+  .deckbar { display: none; }
+}
 </style>
 </head>
 <body>
@@ -212,7 +248,7 @@ td.right, th.right { text-align: right; }
     <div class="copy rv">
       <p class="lead">Дәптердің орнына SQLite базасы: нөмірлерді есепке алатын Android қосымшасы.</p>
       <a class="btn" href="#s2" data-next>Бастау</a>
-      <p class="hint">Беттеу: жоғары және төмен перне немесе Space.</p>
+      <p class="hint">Беттеу: перне ← →, Space немесе дөңгелек. F: толық экран.</p>
       <p class="label">Топтық жоба, ЖИТ-31, 2026. Android Studio, Java, SQLite.</p>
     </div>
     <div class="boardwrap glass rv"><span class="chip">12 / 16 брондалған</span>
@@ -837,14 +873,13 @@ videoView.setOnCompletionListener(mp -&gt;
       </figure>
       <p class="wall" style="margin-top: var(--space-md)">15 секундтық бейне: шахматка, брондау құны, статистика. Мәзірде «Бейне» пункті. Тоқтату, жалғастыру және басынан бастау батырмалары бар.</p>
     </div>
-    <div class="boardwrap span-6 rv" aria-hidden="true">
-      <div class="board">
-        <span class="fl">1</span><span class="t">101</span><span class="t">102</span><span class="t">103</span><span class="t">104</span>
-        <span class="fl">2</span><span class="t">201</span><span class="t">202</span><span class="t">203</span><span class="t">204</span>
-        <span class="fl">3</span><span class="t">301</span><span class="t">302</span><span class="t">303</span><span class="t">304</span>
-      </div>
-      <p class="boardnote">Бейненің бір көрінісі: нөмірлер кезекпен брондалады.</p>
-    </div>
+    <figure class="span-6 rv vidbox">
+      <video controls loop muted playsinline preload="metadata" width="1280" height="720" aria-label="Қонақүй қосымшасының бейне анимациясы">
+        <source src="Қонақүй_видео.webm" type="video/webm">
+        <source src="Қонақүй_видео.mp4" type="video/mp4">
+      </video>
+      <figcaption class="label">Бейне анимация, 15 секунд. Қосымшада: мәзір, «Бейне».</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -899,111 +934,136 @@ videoView.setOnCompletionListener(mp -&gt;
 
 </main>
 
+
+<div class="deckbar" role="group" aria-label="Слайд басқаруы">
+  <button type="button" id="prev" aria-label="Алдыңғы слайд"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <span class="count" id="count" aria-live="polite">1 / 1</span>
+  <button type="button" id="next" aria-label="Келесі слайд"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  <button type="button" id="fs" class="fs" aria-label="Толық экран">Толық экран</button>
+</div>
 <script>
 (function () {
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var slides = [].slice.call(document.querySelectorAll('.slide'));
   var rail = document.getElementById('rail');
   var bar = document.getElementById('bar');
-  var idx = 0;
+  var count = document.getElementById('count');
+  var prevB = document.getElementById('prev'), nextB = document.getElementById('next'), fsB = document.getElementById('fs');
+  var idx = -1, timers = [], lock = 0;
 
-  /* Реттік белгілер (бұрынғы нүктелер): әр слайдқа бір батырма */
-  slides.forEach(function (s, i) {
+  var dots = slides.map(function (s, i) {
     var b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('aria-label', 'Слайд ' + (i + 1));
-    b.title = 'Слайд ' + (i + 1);
-    b.addEventListener('click', function () { s.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); });
+    b.addEventListener('click', function () { go(i); });
     rail.appendChild(b);
-  });
-  var ticks = [].slice.call(rail.children);
-
-  function current() {
-    var cur = 0;
-    slides.forEach(function (s, i) { if (s.getBoundingClientRect().top <= window.innerHeight * 0.45) cur = i; });
-    return cur;
-  }
-  function onScroll() {
-    var h = document.documentElement;
-    var max = h.scrollHeight - h.clientHeight;
-    bar.style.transform = 'scaleX(' + (max > 0 ? h.scrollTop / max : 0) + ')';
-    idx = current();
-    ticks.forEach(function (t, i) { if (i === idx) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); });
-  }
-  addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  /* Пернетақта: жоғары, төмен, Space, Home, End */
-  function go(d) {
-    idx = Math.max(0, Math.min(slides.length - 1, current() + d));
-    slides[idx].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
-  }
-  addEventListener('keydown', function (e) {
-    if (e.target.closest && e.target.closest('a, button, input, textarea')) { if (e.key === ' ' || e.key === 'Enter') return; }
-    if (['ArrowDown', 'PageDown', ' '].indexOf(e.key) > -1) { e.preventDefault(); go(1); }
-    else if (['ArrowUp', 'PageUp'].indexOf(e.key) > -1) { e.preventDefault(); go(-1); }
-    else if (e.key === 'Home') { e.preventDefault(); slides[0].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
-    else if (e.key === 'End') { e.preventDefault(); slides[slides.length - 1].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
-  });
-  var next = document.querySelector('[data-next]');
-  if (next) next.addEventListener('click', function (e) { e.preventDefault(); go(1); });
-
-  /* Тақырыптар: сөздер бір-бірлеп көтеріледі */
-  [].slice.call(document.querySelectorAll('h1, h2')).forEach(function (h) {
-    var words = h.textContent.trim().split(/\s+/);
-    h.setAttribute('aria-label', h.textContent.trim());
-    h.textContent = '';
-    words.forEach(function (w, k) {
-      var o = document.createElement('span'); o.className = 'w'; o.setAttribute('aria-hidden', 'true');
-      var i = document.createElement('span'); i.className = 'wi'; i.style.setProperty('--k', k); i.textContent = w;
-      o.appendChild(i); h.appendChild(o); if (k < words.length - 1) h.appendChild(document.createTextNode(' '));
-    });
-    h.classList.add('sw');
+    return b;
   });
 
-  /* Кіру: бір рет, көрінетін болғанда. Сценарийсіз немесе IO жоқ болса, бәрі көрінеді */
-  slides.forEach(function (sl) {
-    var n = 0;
-    [].slice.call(sl.querySelectorAll('.rv, .sw')).forEach(function (el) { el.style.setProperty('--i', n++); });
-    [].slice.call(sl.querySelectorAll('.board .t')).forEach(function (t, k) { t.style.setProperty('--n', k); });
-  });
-  var rv = [].slice.call(document.querySelectorAll('.rv, .sw'));
-  if (!('IntersectionObserver' in window)) { rv.forEach(function (el) { el.classList.add('in'); }); return; }
-  var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: 0.15 });
-  rv.forEach(function (el) { io.observe(el); });
-  setTimeout(function () { rv.forEach(function (el) { el.classList.add('in'); }); }, 4500);
-
-  /* Скриншоттар: меңзер қозғалғанда сәл бұрылады (тек transform) */
-  if (!reduce) {
-    [].slice.call(document.querySelectorAll('.print')).forEach(function (p) {
-      p.addEventListener('pointermove', function (e) {
-        var r = p.getBoundingClientRect();
-        p.style.setProperty('--ry', (((e.clientX - r.left) / r.width - 0.5) * 12) + 'deg');
-        p.style.setProperty('--rx', ((0.5 - (e.clientY - r.top) / r.height) * 8) + 'deg');
-      });
-      p.addEventListener('pointerleave', function () { p.style.setProperty('--rx', '0deg'); p.style.setProperty('--ry', '0deg'); });
+  /* Әр слайдты экранға сыйғызу: масштаб ені мен биіктігі бойынша */
+  function fit() {
+    var aw = innerWidth - 96, ah = innerHeight - 96;
+    slides.forEach(function (s) {
+      var c = s.querySelector('.container');
+      c.style.setProperty('--fit', 1);
+      var w = c.offsetWidth, h = c.scrollHeight;
+      var k = Math.min(ah / h, aw / w, 1.6);
+      c.style.setProperty('--fit', Math.max(0.35, k).toFixed(3));
     });
   }
 
-  /* Сандарды санау: соңғы мән HTML-де тұр, қозғалыс рұқсат болса ғана 0-ден санайды */
-  if (!reduce) {
-    var cio = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var el = e.target, to = +el.dataset.count, t0 = performance.now(), d = 1100;
-        function step(t) {
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  function enter(s) {
+    var rv = [].slice.call(s.querySelectorAll('.rv'));
+    rv.forEach(function (el, i) {
+      if (reduce) { el.classList.add('in'); return; }
+      timers.push(setTimeout(function () { el.classList.add('in'); }, 120 + i * 110));
+    });
+    if (!reduce) {
+      [].slice.call(s.querySelectorAll('[data-count]')).forEach(function (el) {
+        var to = +el.dataset.count, t0 = performance.now(), d = 1100;
+        (function step(t) {
           var p = Math.min(1, (t - t0) / d);
           el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
           if (p < 1) requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-        cio.unobserve(el);
+        })(t0);
       });
-    }, { threshold: 0.6 });
-    [].slice.call(document.querySelectorAll('[data-count]')).forEach(function (el) { cio.observe(el); });
+    }
   }
+
+  function go(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === idx) return;
+    clearTimers();
+    if (idx >= 0) {
+      var old = slides[idx];
+      old.classList.remove('active');
+      [].slice.call(old.querySelectorAll('.rv')).forEach(function (el) { el.classList.remove('in'); });
+    }
+    idx = n;
+    var s = slides[idx];
+    s.classList.add('active');
+    enter(s);
+    dots.forEach(function (d, i) { if (i === idx) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+    count.textContent = (idx + 1) + ' / ' + slides.length;
+    bar.style.transform = 'scaleX(' + (idx / (slides.length - 1)) + ')';
+    prevB.disabled = idx === 0; nextB.disabled = idx === slides.length - 1;
+    try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {}
+  }
+  function next() { go(idx + 1); }
+  function prev() { go(idx - 1); }
+
+  function toggleFs() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  document.addEventListener('fullscreenchange', function () {
+    fsB.textContent = document.fullscreenElement ? 'Шығу' : 'Толық экран';
+    fit();
+  });
+
+  prevB.addEventListener('click', prev);
+  nextB.addEventListener('click', next);
+  fsB.addEventListener('click', toggleFs);
+  [].slice.call(document.querySelectorAll('[data-next]')).forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); next(); });
+  });
+
+  addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); prev(); }
+    else if (k === 'Home') { e.preventDefault(); go(0); }
+    else if (k === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (k === 'f' || k === 'F' || k === 'а' || k === 'А') { toggleFs(); }
+  });
+
+  addEventListener('wheel', function (e) {
+    var now = Date.now();
+    if (now - lock < 700 || Math.abs(e.deltaY) < 20) return;
+    lock = now;
+    if (e.deltaY > 0) next(); else prev();
+  }, { passive: true });
+
+  var sx = null, sy = null;
+  addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { if (dx < 0) next(); else prev(); }
+    sx = null;
+  }, { passive: true });
+
+  addEventListener('resize', fit);
+  addEventListener('hashchange', function () { var n = parseInt(location.hash.slice(1), 10); if (n) go(n - 1); });
+
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  addEventListener('load', fit);
+  var start = parseInt(location.hash.slice(1), 10);
+  go(start ? start - 1 : 0);
 })();
 </script>
 </body>
